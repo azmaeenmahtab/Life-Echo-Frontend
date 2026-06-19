@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@theme {
+  /* 1. Maps 'font-poppins' utility */
+  --font-poppins: var(--font-poppins), sans-serif;
+
+  /* 2. Maps 'font-slab' utility */
+  --font-slab: var(--font-roboto-slab), serif;
+
+  /* 3. Maps 'font-serif' utility for your elegant brand look */
+  --font-serif: "Playfair Display", "Merriweather", "Georgia", serif;
+}
