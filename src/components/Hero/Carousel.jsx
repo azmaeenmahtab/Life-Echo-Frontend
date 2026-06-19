@@ -4,6 +4,10 @@ import { useState, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { EffectCoverflow, Navigation, Pagination } from "swiper/modules";
 import Image from "next/image";
+import c1 from "@/assets/carousel1.jpg"
+import c2 from "@/assets/carousel2.jpg"
+import c3 from "@/assets/carousel3.jpg"
+import c4 from "@/assets/carousel4.jpg"
 
 import "swiper/css";
 import "swiper/css/effect-coverflow";
@@ -14,31 +18,43 @@ const CAROUSEL_SLIDES = [
   {
     id: 1,
     title: "vivid",
-    image: "/carousel/vivid.jpg", 
+    image: c1, 
     overlayClass: "from-purple-900/30 via-transparent to-transparent",
   },
   {
     id: 2,
     title: "petaled",
-    image: "/carousel/petaled.jpg",
+    image: c2,
     overlayClass: "from-amber-900/30 via-transparent to-transparent",
   },
   {
     id: 3,
     title: "bloom",
-    image: "/carousel/bloom.jpg",
+    image: c3,
     overlayClass: "from-teal-900/30 via-transparent to-transparent",
   },
   {
     id: 4,
     title: "bloom",
-    image: "/carousel/bloom.jpg",
+    image: c4,
     overlayClass: "from-teal-900/30 via-transparent to-transparent",
   },
   {
     id: 5,
     title: "bloom",
-    image: "/carousel/bloom.jpg",
+    image: c1,
+    overlayClass: "from-teal-900/30 via-transparent to-transparent",
+  },
+  {
+    id: 6,
+    title: "bloom",
+    image: c2,
+    overlayClass: "from-teal-900/30 via-transparent to-transparent",
+  },
+  {
+    id: 7,
+    title: "bloom",
+    image: c3,
     overlayClass: "from-teal-900/30 via-transparent to-transparent",
   },
 ];
@@ -49,6 +65,7 @@ export default function PremiumCarousel() {
   // CRITICAL INITIALIZATION FIX: 
   // Forces Swiper calculations to occur exclusively client-side once CSS layouts have completely painted.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
   }, []);
 
@@ -56,9 +73,9 @@ export default function PremiumCarousel() {
     // Elegant fallback placeholder that perfectly mimics the layout skeleton dimensions during SSR load
     return (
       <div className="w-full max-w-7xl mx-auto px-4 py-18 flex items-center justify-center gap-6 opacity-0">
-        <div className="w-1/4 aspect-[4/5] rounded-[36px] bg-gray-200" />
-        <div className="w-1/2 aspect-[4/5] rounded-[36px] bg-gray-300 scale-110" />
-        <div className="w-1/4 aspect-[4/5] rounded-[36px] bg-gray-200" />
+        <div className="w-1/4 aspect-4/5 rounded-[36px] bg-gray-200" />
+        <div className="w-1/2 aspect-4/5 rounded-[36px] bg-gray-300 scale-110" />
+        <div className="w-1/4 aspect-4/5 rounded-[36px] bg-gray-200" />
       </div>
     );
   }
@@ -86,7 +103,7 @@ export default function PremiumCarousel() {
             slideShadows: false,
           }}
           loop={true}
-          pagination={{ 
+           pagination={{ 
             clickable: true,
             el: ".custom-swiper-pagination" 
           }}
@@ -94,12 +111,12 @@ export default function PremiumCarousel() {
             nextEl: ".custom-swiper-next",
             prevEl: ".custom-swiper-prev",
           }}
-          className="w-full !overflow-visible py-6"
+          className="w-full overflow-visible! py-6"
         >
           {CAROUSEL_SLIDES.map((slide) => (
             <SwiperSlide 
               key={slide.id} 
-              className="relative aspect-[3/4] md:aspect-[4/5] rounded-[36px] overflow-hidden bg-white shadow-lg transition-all duration-500"
+              className="relative aspect-3/4 md:aspect-4/5 rounded-[36px] overflow-hidden bg-white shadow-lg transition-all duration-500"
             >
               {/* Slide Image Wrapper */}
               <div className="absolute inset-0 w-full h-full">
@@ -114,7 +131,7 @@ export default function PremiumCarousel() {
               </div>
 
               {/* Tint overlay */}
-              <div className={`absolute inset-0 bg-gradient-to-t ${slide.overlayClass}`} />
+              <div className={`absolute inset-0 bg-linear-to-t ${slide.overlayClass}`} />
 
               {/* Typography overlay matching layout */}
               <div className="absolute inset-0 flex items-center justify-center p-6 pointer-events-none">
