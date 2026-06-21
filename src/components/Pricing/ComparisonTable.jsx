@@ -1,3 +1,4 @@
+
 import React from 'react';
 // Assuming Hero UI (NextUI) components are installed
 import {  Card, CardBody, Chip } from '@heroui/react'; 
@@ -19,11 +20,11 @@ export const PlanComparisonTable = () => {
 
   return (
     <Card className="bg-[#FAF8F0] border border-[#EBE7D9] shadow-none p-6 md:p-8 rounded-2xl flex-1">
-      <CardBody className="p-0 overflow-x-auto">
+      <div className="p-0 overflow-x-auto">
         <div className="flex justify-between items-center mb-8 min-w-[400px]">
           <h3 className="text-2xl font-serif font-bold text-[#1E2E24]">Compare Plans</h3>
           <Chip 
-            startContent={<Sparkles size={14} className="text-amber-600 fill-amber-600" />}
+            startcontent={<Sparkles size={14} className="text-amber-600 fill-amber-600" />}
             className="bg-[#FCEFCA] text-[#78590A] border-none font-sans font-medium text-xs"
           >
             Premium Status
@@ -50,7 +51,7 @@ export const PlanComparisonTable = () => {
             ))}
           </tbody>
         </table>
-      </CardBody>
+      </div>
     </Card>
   );
 };

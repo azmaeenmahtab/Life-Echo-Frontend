@@ -1,8 +1,14 @@
-import { Button, Card, CardBody, Chip } from '@heroui/react'; 
+"use client"
+
+
+import { useState } from 'react';
+import { Button, Card, CardBody, Chip } from '@heroui/react';
 import { Check,  Lock } from 'lucide-react';
 
 
 export const PremiumCheckoutCard = () => {
+  const [isLoading, setIsLoading] = useState(false);
+
   const checkoutFeatures = [
     "Lifetime Unlimited Lessons",
     "Exclusive Premium-Only Content",
@@ -10,9 +16,13 @@ export const PremiumCheckoutCard = () => {
     "Verified Community Badge"
   ];
 
+const handleCheckout = () => {
+  setIsLoading(true);
+}
+
   return (
     <Card className="bg-[#FAF8F0] border border-[#EBE7D9] shadow-md p-6 md:p-8 rounded-2xl w-full lg:w-[420px] shrink-0 self-start">
-      <CardBody className="p-0 flex flex-col h-full">
+      <div className="p-0 flex flex-col h-full">
         <div className="flex justify-between items-start mb-1">
           <h3 className="text-2xl font-serif font-bold text-[#1E2E24]">Premium Member</h3>
           <div className="text-right">
@@ -37,13 +47,16 @@ export const PremiumCheckoutCard = () => {
             </div>
           ))}
         </div>
-
-        <Button 
-          className="w-full bg-[#417453] hover:bg-[#345D42] text-white font-sans font-semibold py-6 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 mb-4"
-          endContent={<span className="text-lg">→</span>}
-        >
-          Upgrade to Premium
-        </Button>
+        <form action="/api/checkout_sessions" method="POST" onSubmit={handleCheckout}>
+          <Button
+            type="submit"
+            isLoading={isLoading}
+            className="w-full bg-[#417453] hover:bg-[#345D42] text-white font-sans font-semibold py-6 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 mb-4"
+            endContent={!isLoading ? <span className="text-lg">→</span> : null}
+          >
+            {isLoading ? "Redirecting..." : "Upgrade to Premium"}
+          </Button>
+        </form>
 
         {/* Social Proof */}
         <div className="flex items-center gap-3 justify-center mb-6">
@@ -62,7 +75,7 @@ export const PremiumCheckoutCard = () => {
             <Lock size={12} />
           </div>
         </div>
-      </CardBody>
+      </div>
     </Card>
   );
 };

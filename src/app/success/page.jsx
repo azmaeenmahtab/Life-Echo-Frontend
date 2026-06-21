@@ -1,7 +1,10 @@
 // app/success/page.js
 
 import Link from 'next/link';
+import { headers } from 'next/headers';
 import { Stripe } from 'stripe';
+import { auth } from '../../lib/auth';
+import { changePlanByUserId } from '../../lib/actions/plan';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -23,6 +26,20 @@ export default async function SuccessPage({ searchParams }) {
     const session = await stripe.checkout.sessions.retrieve(session_id);
     const customerEmail = session.customer_details?.email;
 
+    // Resolve the logged-in user so we can upgrade their plan server-side.
+    const headersList = await headers();
+    const authSession = await auth.api.getSession({ headers: headersList });
+
+    let planUpgraded = false;
+    if (authSession?.user?.id) {
+      try {
+        await changePlanByUserId(authSession.user.id, 'pro');
+        planUpgraded = true;
+      } catch (err) {
+        console.error('Failed to upgrade plan after payment:', err);
+      }
+    }
+
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-gray-50">
         <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-md text-center">
@@ -32,11 +49,18 @@ export default async function SuccessPage({ searchParams }) {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Thank you for your purchase!</h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 mb-2">
             A receipt has been sent to <span className="font-medium text-gray-900">{customerEmail}</span>.
           </p>
-          <Link 
-            href="/" 
+          {planUpgraded ? (
+            <p className="text-green-600 font-medium mb-6">Your account has been upgraded to Pro.</p>
+          ) : authSession?.user?.id ? null : (
+            <p className="text-amber-600 font-medium mb-6">
+              Please log in to apply the Pro plan to your account.
+            </p>
+          )}
+          <Link
+            href="/"
             className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2.5 rounded-lg transition-colors"
           >
             Go back to Dashboard

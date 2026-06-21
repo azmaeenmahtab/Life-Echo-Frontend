@@ -1,4 +1,3 @@
-import { Chip } from '@heroui/react'; 
 import { PlanComparisonTable } from './ComparisonTable';
 import { PremiumCheckoutCard } from './CheckoutCard';
 import { ValuePropositionProps } from './ValuePropositionProps';
@@ -6,16 +5,16 @@ import { ValuePropositionProps } from './ValuePropositionProps';
 
 export default function PricingIndex() {
   return (
-    <div className="min-h-screen bg-[#F6F4EB] py-16 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
+    <div className="min-h-screen bg-[#F6F4EB] pb-16 pt-30 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
       
       {/* Header Section */}
       <div className="text-center max-w-2xl mx-auto mb-12">
-        <Chip 
+        {/* <Chip 
           className="bg-[#E2F0E7] text-[#1B5E3A] font-sans font-bold text-[10px] tracking-wider mb-4 border-none px-3 py-1"
-          endContent={<span className="text-xs">👁</span>}
+          endcontent={<span className="text-xs">👁</span>}
         >
           PREMIUM ACCESS
-        </Chip>
+        </Chip> */}
         <h1 className="text-4xl md:text-5xl font-serif font-black text-[#1E2E24] tracking-tight mb-4">
           Unlock Lifetime Wisdom
         </h1>

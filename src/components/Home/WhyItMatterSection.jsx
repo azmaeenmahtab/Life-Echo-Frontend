@@ -1,67 +1,71 @@
-import React from 'react';
-import { Card, CardBody } from '@heroui/react'; 
-import { BookOpen, Sprout, Users, Feather } from 'lucide-react';
+import React from "react";
+import { Card } from "@heroui/react";
+import { BookOpen, Leaf, Users } from "lucide-react";
+
+const features = [
+  {
+    icon: BookOpen,
+    title: "Preserve Wisdom",
+    description: "Ensure your hardest-earned insights aren't lost to time, but structured for longevity.",
+  },
+  {
+    icon: Leaf,
+    title: "Mindful Reflection",
+    description: "The act of writing is the act of healing. Reflect deeply on your daily experiences.",
+  },
+  {
+    icon: Users,
+    title: "Community Growth",
+    description: "Learn from a global collective of mentors who share their real-world experiences.",
+  },
+  {
+    icon: Leaf,
+    title: "Personal Legacy",
+    description: "Leave behind more than just memories; leave a roadmap for those who follow you.",
+  },
+];
 
 export default function WhyItMatters() {
-  const items = [
-    {
-      icon: <BookOpen className="w-6 h-6 text-[#2D5A3B]" />,
-      title: "Preserve Wisdom",
-      description: "Ensure your hardest-earned insights aren't lost to time, but structured for longevity."
-    },
-    {
-      icon: <Sprout className="w-6 h-6 text-[#2D5A3B]" />, // Represents Mindful/Zen Reflection
-      title: "Mindful Reflection",
-      description: "The act of writing is the act of healing. Reflect deeply on your daily experiences."
-    },
-    {
-      icon: <Users className="w-6 h-6 text-[#2D5A3B]" />,
-      title: "Community Growth",
-      description: "Learn from a global collective of mentors who share their real-world experiences."
-    },
-    {
-      icon: <Feather className="w-6 h-6 text-[#2D5A3B]" />, // Quill/Feather for Personal Legacy
-      title: "Personal Legacy",
-      description: "Leave behind more than just memories; leave a roadmap for those who follow you."
-    }
-  ];
-
   return (
-    <section className="bg-[#F6F4EB] py-16 px-6 sm:px-8 flex flex-col items-center">
-      {/* Section Header */}
-      <div className="text-center mb-12 flex flex-col items-center">
-        <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#2D5A3B] tracking-tight mb-3">
+    <section className="py-16 px-4 max-w-7xl mx-auto flex flex-col items-center">
+      {/* Header Section */}
+      <div className="text-center mb-12">
+        <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#2C5E3B] mb-3">
           Why Learning From Life Matters
         </h2>
-        {/* Visual Underline Separator from Capture.PNG */}
-        <div className="w-16 h-1 bg-[#8C6D3E] rounded-full mt-1"></div>
+        <div className="w-24 h-[3px] bg-[#8B7355] mx-auto rounded-full" />
       </div>
 
-      {/* Features Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl w-full">
-        {items.map((item, index) => (
-          <Card 
-            key={index} 
-            className="bg-[#FAF8F0]/80 border border-[#EBE7D9]/60 shadow-none p-5 rounded-2xl hover:bg-[#FAF8F0] transition-colors"
-          >
-            <CardBody className="p-0 flex flex-col items-start text-left">
-              {/* Icon Wrapper */}
-              <div className="mb-4 p-1">
-                {item.icon}
+      {/* Grid Layout */}
+      <div className="grid grid-cols-4 gap-6 w-full">
+        {features.map((feature, index) => {
+          const Icon = feature.icon;
+          return (
+            <Card 
+              key={index} 
+              shadow="none" 
+              className="bg-[#F7F5F0] border-none rounded-2xl transition-transform duration-300 hover:-translate-y-1"
+            >
+              {/* Clean div container replacing CardBody */}
+              <div className="flex flex-col items-start gap-4 p-6">
+                {/* Icon Wrapper */}
+                <div className="text-[#2C5E3B]">
+                  <Icon size={28} strokeWidth={1.75} />
+                </div>
+                
+                {/* Content */}
+                <div className="space-y-2">
+                  <h3 className="text-xl font-bold font-serif text-[#1C1C1C]">
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm text-[#555555] leading-relaxed font-sans">
+                    {feature.description}
+                  </p>
+                </div>
               </div>
-              
-              {/* Feature Title (Serif) */}
-              <h3 className="font-serif font-bold text-lg text-[#1E2E24] mb-2">
-                {item.title}
-              </h3>
-              
-              {/* Feature Description (Sans / Poppins) */}
-              <p className="font-sans text-sm text-[#506055] leading-relaxed">
-                {item.description}
-              </p>
-            </CardBody>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
       </div>
     </section>
   );
