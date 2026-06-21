@@ -18,5 +18,35 @@ export const auth = betterAuth({
             clientId: process.env.GOOGLE_CLIENT_ID  , 
             clientSecret: process.env.GOOGLE_CLIENT_SECRET , 
         }, 
+  },
+  user: {
+    additionalFields: {
+      plan: {
+        type: "string",
+        required: false,
+        input: false, // User can provide this during signup
+      },
+      role: {
+        type: "string",
+        required: false,
+        input: false, // Internal-only, cannot be set during signup
+      }
+    }
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        // This fires automatically during social or credential signups
+        before: async (user) => {
+          return {
+            data: {
+              ...user,
+              role: "user", // Inject default role automatically
+              plan: "free", // Inject default plan automatically
+            },
+          };
+        },
+      },
     },
+  },
 });

@@ -1,25 +1,76 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 
 export default function LoginIndex() {
+  const router = useRouter();
+
+  // Form Field States
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  // UI Interaction States
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [authError, setAuthError] = useState("");
+
+  // Email and Password Login Handler
+  const handleEmailLogin = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setAuthError("");
+
+    try {
+      const { data, error } = await authClient.signIn.email({
+        email: email,
+        password: password,
+        callbackURL: "/home",
+      });
+
+      if (error) {
+        setAuthError(error.message || "Unable to sign in. Please check your credentials.");
+      } else if (data) {
+        router.push("/home");
+      }
+    } catch (err) {
+      setAuthError("Failed to establish network connection. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Google Social Provider Sign In Handler
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    setAuthError("");
+    try {
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/home",
+      });
+    } catch (err) {
+      setAuthError("Could not initialize authentication request with Google.");
+      setIsGoogleLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] pt-28 pb-16 px-4 flex flex-col items-center justify-center relative overflow-hidden selection:bg-[#4D7C5D]/20">
+    <div className="min-h-screen bg-[#FAF8F5] pt-28 pb-16 px-4 flex flex-col items-center justify-center relative overflow-hidden selection:bg-[#4D7C5D]/20 font-poppins">
       {/* Background ambient glass glows */}
       <div className="absolute top-1/4 -left-20 w-80 h-80 bg-[#4D7C5D]/10 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-[#2D6A4F]/10 rounded-full blur-[100px] pointer-events-none" />
 
       {/* Main Glassmorphic Container */}
-      <div className="w-full max-w-4xl bg-white/[0.35] dark:bg-black/[0.15] backdrop-blur-2xl rounded-3xl border border-white/[0.3] shadow-[0_20px_50px_rgba(0,0,0,0.05)] overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-[600px] relative z-10">
-        
+      <div className="w-full max-w-4xl bg-white/35 dark:bg-black/15 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-[0_20px_50px_rgba(0,0,0,0.05)] overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-162.5 relative z-10">
+
         {/* Left Panel: Matching artwork panel from Sign Up */}
         <div className="md:col-span-5 bg-gradient-to-b from-[#C9D6EA]/60 to-[#4D7C5D]/90 p-8 flex flex-col justify-between relative text-white">
           <div className="absolute inset-0 bg-white/[0.05] backdrop-blur-[2px] pointer-events-none" />
-          
+
           {/* Visual Placeholder Graphic Icon */}
           <div className="relative z-10 flex-1 flex items-center justify-center opacity-70">
             <svg className="w-24 h-24 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,8 +92,7 @@ export default function LoginIndex() {
         {/* Right Panel: Login Form */}
         <div className="md:col-span-7 p-8 md:p-10 flex flex-col justify-center">
           <div className="text-center md:text-left mb-6">
-            {/* Using font-slab for the heading as established in our font guide! */}
-            <h2 className="text-3xl font-bold font-slab text-[#2D6A4F] tracking-wide mb-1">
+            <h2 className="text-3xl font-bold font-serif text-[#2D6A4F] tracking-wide mb-1">
               Welcome Back
             </h2>
             <p className="text-xs text-gray-500 font-normal">
@@ -50,7 +100,14 @@ export default function LoginIndex() {
             </p>
           </div>
 
-          <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+          {/* Dynamic Server Feedback Alert */}
+          {authError && (
+            <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-xs font-medium">
+              {authError}
+            </div>
+          )}
+
+          <form className="space-y-5" onSubmit={handleEmailLogin}>
             {/* Email Field */}
             <div>
               <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Email Address</label>
@@ -58,7 +115,15 @@ export default function LoginIndex() {
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                 </span>
-                <input type="email" placeholder="jane@example.com" className="w-full bg-white/50 border border-gray-200/50 rounded-xl py-2.5 pl-10 pr-4 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4D7C5D]/30 focus:bg-white transition-all font-normal" />
+                <input
+                  type="email"
+                  required
+                  disabled={isLoading}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="jane@example.com"
+                  className="w-full bg-white/50 border border-gray-200/50 rounded-xl py-2.5 pl-10 pr-4 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4D7C5D]/30 focus:bg-white transition-all font-normal disabled:opacity-60"
+                />
               </div>
             </div>
 
@@ -74,7 +139,15 @@ export default function LoginIndex() {
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                 </span>
-                <input type={showPassword ? "text" : "password"} placeholder="••••••••" className="w-full bg-white/50 border border-gray-200/50 rounded-xl py-2.5 pl-10 pr-10 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4D7C5D]/30 focus:bg-white transition-all tracking-widest" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  disabled={isLoading}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-white/50 border border-gray-200/50 rounded-xl py-2.5 pl-10 pr-10 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4D7C5D]/30 focus:bg-white transition-all tracking-widest disabled:opacity-60"
+                />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600">
                   {showPassword ? (
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" /></svg>
@@ -94,27 +167,40 @@ export default function LoginIndex() {
             </div>
 
             {/* Action Submit Button */}
-            <button type="submit" className="w-full bg-[#4D7C5D] hover:bg-[#3D634A] text-white font-semibold text-sm py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-[0.99]">
-              Sign In
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-[#4D7C5D] hover:bg-[#3D634A] text-white font-semibold text-sm py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none"
+            >
+              {isLoading ? "Signing In..." : "Sign In"}
+              {!isLoading && <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>}
             </button>
           </form>
 
           {/* Divider line style */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200/60" /></div>
-            <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-wider"><span className="bg-transparent px-3 text-gray-400">OR</span></div>
+            <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-wider"><span className="bg-[#FAF8F5] px-3 text-gray-400">OR</span></div>
           </div>
 
           {/* OAuth Google button */}
-          <button className="w-full bg-white/80 hover:bg-white border border-gray-200 text-gray-700 font-semibold text-sm py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm">
-            <svg className="w-4 h-4" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.92h6.61a5.66 5.66 0 0 1-2.45 3.72v3.08h3.95c2.31-2.13 3.63-5.27 3.63-8.65z"/>
-              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.95-3.08c-1.1.74-2.51 1.18-3.98 1.18-3.07 0-5.67-2.08-6.6-4.88H1.42v3.18A11.94 11.94 0 0 0 12 24z"/>
-              <path fill="#FBBC05" d="M5.4 14.31A7.17 7.17 0 0 1 5 12c0-.8.14-1.58.4-2.31V6.51H1.42A11.94 11.94 0 0 0 0 12c0 1.92.45 3.74 1.26 5.37l4.14-3.06z"/>
-              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.31 2.67 1.42 6.51l4.14 3.18c.93-2.8 3.53-4.94 6.6-4.94z"/>
-            </svg>
-            Continue with Google
+          <button
+            type="button"
+            disabled={isLoading}
+            onClick={handleGoogleSignIn}
+            className="w-full bg-white/80 hover:bg-white border border-gray-200 text-gray-700 font-semibold text-sm py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm disabled:opacity-50"
+          >
+            {isGoogleLoading ? "Redirecting..." : (
+              <span className="flex items-center gap-2">
+                <svg className="w-4 h-4" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.92h6.61a5.66 5.66 0 0 1-2.45 3.72v3.08h3.95c2.31-2.13 3.63-5.27 3.63-8.65z" />
+                  <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.95-3.08c-1.1.74-2.51 1.18-3.98 1.18-3.07 0-5.67-2.08-6.6-4.88H1.42v3.18A11.94 11.94 0 0 0 12 24z" />
+                  <path fill="#FBBC05" d="M5.4 14.31A7.17 7.17 0 0 1 5 12c0-.8.14-1.58.4-2.31V6.51H1.42A11.94 11.94 0 0 0 0 12c0 1.92.45 3.74 1.26 5.37l4.14-3.06z" />
+                  <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.31 2.67 1.42 6.51l4.14 3.18c.93-2.8 3.53-4.94 6.6-4.94z" />
+                </svg>
+                Continue with Google
+              </span>
+            )}
           </button>
 
           {/* Redirection link */}

@@ -20,6 +20,7 @@ export default function SignUpIndex() {
   // UI Interaction States
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [authError, setAuthError] = useState("");
 
   // Email and Password Sign Up Handler
@@ -52,7 +53,7 @@ export default function SignUpIndex() {
 
   // Google Social Provider Sign In Handler
   const handleGoogleSignIn = async () => {
-    setIsLoading(true);
+    setIsGoogleLoading(true);
     setAuthError("");
     try {
       await authClient.signIn.social({
@@ -235,6 +236,10 @@ export default function SignUpIndex() {
             onClick={handleGoogleSignIn}
             className="w-full bg-white/80 hover:bg-white border border-gray-200 text-gray-700 font-semibold text-sm py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm disabled:opacity-50"
           >
+                {isGoogleLoading ? "Redirecting..." : (
+                    <span>
+
+                    
             <svg className="w-4 h-4" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.92h6.61a5.66 5.66 0 0 1-2.45 3.72v3.08h3.95c2.31-2.13 3.63-5.27 3.63-8.65z"/>
               <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.95-3.08c-1.1.74-2.51 1.18-3.98 1.18-3.07 0-5.67-2.08-6.6-4.88H1.42v3.18A11.94 11.94 0 0 0 12 24z"/>
@@ -242,6 +247,7 @@ export default function SignUpIndex() {
               <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.31 2.67 1.42 6.51l4.14 3.18c.93-2.8 3.53-4.94 6.6-4.94z"/>
             </svg>
             Continue with Google
+            </span>)}
           </button>
 
           {/* Bottom redirection element */}
