@@ -88,17 +88,12 @@ export default function Navbar() {
             Add Lessons
           </Link>
           <Link 
-            href="/pricing" 
+            href="/dashboard/my-lessons" 
             className="px-4 py-2 rounded-full text-gray-600 hover:text-[#2D6A4F] hover:bg-white/40 transition-all duration-200"
           >
             My Lessons
           </Link>
-          <Link 
-            href="/pricing" 
-            className="px-4 py-2 rounded-full text-gray-600 hover:text-[#2D6A4F] hover:bg-white/40 transition-all duration-200"
-          >
-            Public Lessons
-          </Link>
+          
         </div>
 
         {/* Right: Auth Actions with Dropdown */}
