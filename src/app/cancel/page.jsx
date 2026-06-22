@@ -1,13 +1,14 @@
 import React from "react";
 import { Card, Button } from "@heroui/react";
 import { AlertCircle, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export default function PaymentCancelled() {
   return (
     <div className="min-h-screen bg-[#F5F2EB] flex flex-col items-center justify-center p-4">
       {/* Main Container Card */}
-      <Card 
-        shadow="md" 
+      <Card
+        shadow="md"
         className="bg-[#FAF8F3] border border-[#EBE7D9] rounded-[32px] w-full max-w-[480px] p-8 md:p-12 text-center flex flex-col items-center justify-center"
       >
         {/* Error Icon Wrapper */}
@@ -22,29 +23,34 @@ export default function PaymentCancelled() {
 
         {/* Description Description */}
         <p className="text-[#556359] text-base leading-relaxed font-sans mb-10 px-2">
-          Your payment process was cancelled and your account has not been upgraded. 
+          Your payment process was cancelled and your account has not been upgraded.
           If this was a mistake, you can try again from the pricing page.
         </p>
 
         {/* Action Buttons */}
-        <div className="w-full space-y-3 mb-8">
-          <Button
-            as="a"
-            href="/pricing" // Adjust route to your pricing page
-            className="w-full bg-[#467856] hover:bg-[#386145] text-white font-sans font-semibold py-6 rounded-2xl shadow-sm transition-all flex items-center justify-center gap-2 text-base"
-            endContent={<ArrowRight size={18} />}
-          >
-            Back to Pricing
-          </Button>
-          
-          <Button
-            as="a"
-            href="/dashboard" // Adjust route to your user dashboard
-            variant="bordered"
-            className="w-full bg-transparent border border-[#E3DFD3] hover:bg-[#F2EFE6] text-[#467856] font-sans font-semibold py-6 rounded-2xl transition-all text-base"
-          >
-            Go to Dashboard
-          </Button>
+        <div className="w-full flex flex-col gap-3 mb-8">
+          <Link href='/pricing' className="mb-3">
+            <Button
+              as="a"
+              href="/pricing" // Adjust route to your pricing page
+              className="w-full bg-[#467856] hover:bg-[#386145] text-white font-sans font-semibold py-6 rounded-2xl shadow-sm transition-all flex items-center justify-center gap-2 text-base"
+              endContent={<ArrowRight size={18} />}
+            >
+              Back to Pricing
+            </Button>
+          </Link>
+
+          <Link href="/home">
+            <Button
+              as="a"
+              href="/home" // Adjust route to your user dashboard
+              variant="bordered"
+              className="w-full bg-transparent border border-[#E3DFD3] hover:bg-[#F2EFE6] text-[#467856] font-sans font-semibold py-6 rounded-2xl transition-all text-base"
+            >
+              Go to Dashboard
+            </Button>
+          </Link>
+
         </div>
 
         {/* Divider line matching the UI layout */}
@@ -62,7 +68,7 @@ export default function PaymentCancelled() {
       {/* Footer Branding text */}
       <footer className="mt-8 text-center">
         <span className="text-xs font-sans tracking-[0.2em] font-medium text-[#A2AFA6] uppercase">
-          LIFE ECHO — ORGANIC LIVING
+          Life Echo - Rooted in Wisdom
         </span>
       </footer>
     </div>
