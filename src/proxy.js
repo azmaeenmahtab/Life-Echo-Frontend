@@ -30,7 +30,8 @@ export const config = {
   matcher: 
   [
     '/dashboard/add-lesson',
-    '/dashboard/my-lessons'
+    '/dashboard/my-lessons',
+    '/pricing'
 
   ],
 }

@@ -6,7 +6,7 @@ import { useState, useRef, useEffect } from "react";
 import logo from "@/assets/logo-lifeecho.png";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
-import {faCircleUser, faPieChart, faArrowRightFromBracket} from "@fortawesome/free-solid-svg-icons";
+import {faCircleUser, faPieChart, faArrowRightFromBracket, faStar} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 export default function Navbar() {
@@ -15,7 +15,8 @@ export default function Navbar() {
   const dropdownRef = useRef(null);
 
   // Better-Auth Session management hook
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
+  console.log("session ", session);
   const user = session?.user;
   console.log("Current User Session:", user);
 
@@ -98,8 +99,23 @@ export default function Navbar() {
 
         {/* Right: Auth Actions with Dropdown */}
         <div className=" " ref={dropdownRef}>
-          {session ? (
+          {isPending ? (
+            // Prevent any auth action while the session is still resolving
+            <div
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/40 text-sm font-semibold text-gray-500 cursor-not-allowed select-none"
+              aria-busy="true"
+              aria-live="polite"
+            >
+              <span className="w-4 h-4 rounded-full border-2 border-gray-300 border-t-[#4D7C5D] animate-spin" />
+              <span>Loading…</span>
+            </div>
+          ) : session ? (
   <div className="relative">
+    {user?.plan == "pro" && (
+      <div className="absolute bg-transparent -top-2 -right-2  font-bold  w-5 h-5 flex items-center justify-center ">
+        <FontAwesomeIcon icon={faStar} style={{color: "rgb(255, 212, 59)",}} />
+      </div>
+    )}
     {/* Trigger: Avatar + Name */}
     <button 
       onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -118,7 +134,7 @@ export default function Navbar() {
           <FontAwesomeIcon icon={faCircleUser} className="text-xl" />
         )}
       </span>
-      <span className="text-sm font-semibold max-w-[120px] truncate">
+      <span className="text-sm font-semibold max-w-30 truncate">
         {user?.name || "Wisdom Seeker"}
       </span>
     </button>
@@ -156,14 +172,14 @@ export default function Navbar() {
   </div>
 ) : (
             <div className="flex items-center gap-4">
-              <Link 
-                href="/auth/login" 
+              <Link
+                href="/auth/login"
                 className="text-sm font-semibold text-gray-700 hover:text-[#2D6A4F] px-4 py-2 rounded-full hover:bg-white/30 transition-all duration-200"
               >
                 Sign In
               </Link>
-              <Link 
-                href="/auth/signup" 
+              <Link
+                href="/auth/signup"
                 className="relative group bg-[#4D7C5D] text-white text-sm font-semibold px-6 py-2.5 rounded-full overflow-hidden transition-all duration-300 hover:scale-105 active:scale-98 shadow-sm hover:shadow-[0_4px_20px_rgba(77,124,93,0.4)]"
               >
                 <span className="absolute inset-0 w-full h-full bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />

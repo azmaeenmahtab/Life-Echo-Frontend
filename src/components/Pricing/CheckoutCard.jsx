@@ -1,24 +1,23 @@
-"use client"
-
+"use client";
 
 import { useState } from 'react';
-import { Button, Card, CardBody, Chip } from '@heroui/react';
-import { Check,  Lock } from 'lucide-react';
-
+import { Button, Card } from '@heroui/react';
+import { Check, Lock } from 'lucide-react';
+import { authClient } from '@/lib/auth-client';
 
 export const PremiumCheckoutCard = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const { data: session } = authClient.useSession();
+  const isPro = session?.user?.plan === 'pro';
 
   const checkoutFeatures = [
-    "Lifetime Unlimited Lessons",
-    "Exclusive Premium-Only Content",
-    "Zero Ad Interruptions",
-    "Verified Community Badge"
+    'Lifetime Unlimited Lessons',
+    'Exclusive Premium-Only Content',
+    'Zero Ad Interruptions',
+    'Verified Community Badge',
   ];
 
-const handleCheckout = () => {
-  setIsLoading(true);
-}
+  const handleCheckout = () => setIsLoading(true);
 
   return (
     <Card className="bg-[#FAF8F0] border border-[#EBE7D9] shadow-md p-6 md:p-8 rounded-2xl w-full lg:w-[420px] shrink-0 self-start">
@@ -47,18 +46,23 @@ const handleCheckout = () => {
             </div>
           ))}
         </div>
+
         <form action="/api/checkout_sessions" method="POST" onSubmit={handleCheckout}>
           <Button
             type="submit"
             isLoading={isLoading}
-            className="w-full bg-[#417453] hover:bg-[#345D42] text-white font-sans font-semibold py-6 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 mb-4"
-            endContent={!isLoading ? <span className="text-lg">→</span> : null}
+            isDisabled={isPro}
+            className="w-full bg-[#417453] hover:bg-[#345D42] disabled:bg-[#A8B5AD] disabled:cursor-not-allowed text-white font-sans font-semibold py-6 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 mb-4"
+            endContent={!isLoading && !isPro ? <span className="text-lg">→</span> : null}
           >
-            {isLoading ? "Redirecting..." : "Upgrade to Premium"}
+            {isLoading
+              ? 'Redirecting...'
+              : isPro
+                ? "You're already on Premium"
+                : 'Upgrade to Premium'}
           </Button>
         </form>
 
-        {/* Social Proof */}
         <div className="flex items-center gap-3 justify-center mb-6">
           <div className="flex -space-x-2 overflow-hidden">
             <img className="inline-block h-7 w-7 rounded-full ring-2 ring-[#FAF8F0]" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=32&h=32&q=80" alt="User" />
@@ -68,7 +72,6 @@ const handleCheckout = () => {
           <p className="text-xs font-sans italic text-[#606E66]">Joined by 12,000+ wisdom seekers</p>
         </div>
 
-        {/* Secure badge */}
         <div className="flex justify-between items-center text-[11px] font-sans font-bold tracking-wider text-[#909E96] mt-auto border-t border-[#EBE7D9]/60 pt-4">
           <span>SECURE STRIPE PAYMENT</span>
           <div className="flex items-center gap-1">

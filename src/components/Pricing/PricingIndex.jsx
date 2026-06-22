@@ -1,9 +1,16 @@
+"use client";
+
 import { PlanComparisonTable } from './ComparisonTable';
 import { PremiumCheckoutCard } from './CheckoutCard';
 import { ValuePropositionProps } from './ValuePropositionProps';
- 
+import { Chip } from '@heroui/react';
+import { Crown } from 'lucide-react';
+import { authClient } from '@/lib/auth-client';
 
 export default function PricingIndex() {
+  const { data: session } = authClient.useSession();
+  const isPro = session?.user?.plan === 'pro';
+
   return (
     <div className="min-h-screen bg-[#F6F4EB] pb-16 pt-30 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
       
@@ -15,6 +22,19 @@ export default function PricingIndex() {
         >
           PREMIUM ACCESS
         </Chip> */}
+
+        {isPro && (
+          <div className='mb-6'>
+<Chip
+            startcontent={<Crown size={14} className="text-amber-600 fill-amber-600" />}
+            variant="flat"
+            className="bg-linear-to-r from-amber-50 to-amber-100  text-amber-800 border border-amber-200/60 font-sans font-semibold text-[11px] tracking-wider uppercase mb-4 px-3 py-1 shadow-sm"
+          >
+            Premium Member · You already have lifetime access
+          </Chip>
+          </div>
+          
+        )}
         <h1 className="text-4xl md:text-5xl font-serif font-black text-[#1E2E24] tracking-tight mb-4">
           Unlock Lifetime Wisdom
         </h1>
