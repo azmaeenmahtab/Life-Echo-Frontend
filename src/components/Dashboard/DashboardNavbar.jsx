@@ -5,15 +5,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDown, Sprout } from "lucide-react";
-import { authClient } from "../../lib/auth-client";
+import { useDashboardSession } from "@/app/(dashboard-layout)/layout";
 
 export default function DashboardNavbar() {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Better-Auth Session
-  const { data: session, isPending } = authClient.useSession();
+  // Reuse the session resolved by the dashboard layout instead of refetching.
+  const { session, isPending } = useDashboardSession();
   const user = session?.user;
 
   // Derive a friendly first name for the greeting

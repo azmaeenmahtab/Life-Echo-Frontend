@@ -1,6 +1,5 @@
 "use client";
-
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Input,
   Select,
@@ -22,6 +21,8 @@ import {
   ChevronDown, // Added chevron for smooth rotational animation
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
+import { useDashboardSession } from "@/app/(dashboard-layout)/layout";
+import { createLesson } from "@/lib/api/lesson";
 
 const categories = [
   { key: "personal-growth", label: "Personal Growth" },
@@ -39,24 +40,70 @@ const emotionalTones = [
 ];
 
 export default function AddLessonPage() {
-  const [isPremiumUser] = useState(false); // Set to true to unlock premium field
-
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState(new Set(["personal-growth"]));
   const [emotionalTone, setEmotionalTone] = useState(new Set(["motivational"]));
   const [story, setStory] = useState("");
   const [accessLevel, setAccessLevel] = useState("free");
   const [selectedFile, setSelectedFile] = useState(null);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Reuse the session already resolved by the dashboard layout.
+  const { session, isPending } = useDashboardSession();
+  const isPremiumUser = session?.user?.plan === "pro";
+  const userId = session?.user?.id;
+
+  // Surface a friendly message if someone lands here unauthenticated.
+  useEffect(() => {
+    if (!isPending && !session) {
+      toast.error("Please sign in to create a lesson");
+    }
+  }, [isPending, session]);
+
+  /**
+   * Uploads the selected file to the backend, which forwards it to imgbb.
+   * Returns the public imgbb URL on success, or null on failure (a toast is shown).
+   */
+  const uploadLessonImage = async (file) => {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    setIsUploading(true);
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/images/upload`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message || "Image upload failed");
+      }
+
+      return data?.image?.url ?? null;
+    } catch (error) {
+      console.error("imgbb upload error:", error);
+      toast.error(error.message || "Failed to upload image");
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setSelectedFile(file);
-      toast.success(`Selected image: ${file.name}`);
+      //   toast.success(`Selected image: ${file.name}`);
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!title.trim() || !story.trim()) {
@@ -64,21 +111,47 @@ export default function AddLessonPage() {
       return;
     }
 
+    if (!userId) {
+      toast.error("You must be signed in to create a lesson.");
+      return;
+    }
+
+    let imageUrl = uploadedImageUrl;
+
+    // Only hit imgbb if the user picked a new file we haven't uploaded yet.
+    if (selectedFile && !imageUrl) {
+      const uploaded = await uploadLessonImage(selectedFile);
+      if (!uploaded) {
+        // Toast already surfaced the error from the helper.
+        return;
+      }
+      imageUrl = uploaded;
+      setUploadedImageUrl(uploaded);
+    }
+
     const payload = {
       title,
-      category: Array.from(category)[0],
-      emotionalTone: Array.from(emotionalTone)[0],
+      category,
+      emotionalTone,
       story,
-      imageFile: selectedFile ? selectedFile.name : null,
+      imageUrl,
       accessLevel: isPremiumUser ? accessLevel : "free",
+      userId,
     };
 
-    console.log("🚀 Prepared Payload for API submission:", payload);
-    toast.success("Seed planted successfully! Your lesson was stored.");
+    try {
+      const created = await createLesson(payload);
+      console.log("🌱 Lesson created:", created);
+      toast.success("Lesson created successfully! Your lesson was stored.");
 
-    setTitle("");
-    setStory("");
-    setSelectedFile(null);
+      setTitle("");
+      setStory("");
+      setSelectedFile(null);
+      setUploadedImageUrl(null);
+    } catch (error) {
+      console.error("createLesson error:", error);
+      toast.error(error.message || "Failed to plant seed");
+    }
   };
 
   return (
