@@ -75,7 +75,7 @@ export default function Navbar() {
             Home
           </Link>
           <Link
-            href="/public-lessons"
+            href="/lessons/public"
             className="px-4 py-2 rounded-full text-gray-600 hover:text-[#2D6A4F] hover:bg-white/40 transition-all duration-200"
           >
             Public Lessons

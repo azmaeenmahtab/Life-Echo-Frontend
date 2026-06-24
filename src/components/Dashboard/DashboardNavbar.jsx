@@ -119,7 +119,7 @@ export default function DashboardNavbar() {
           {dropdownOpen && session && (
             <div
               role="menu"
-              className="absolute right-0 mt-3 w-56 rounded-2xl bg-white border border-[#EBE7D9] shadow-lg overflow-hidden z-50"
+              className="absolute right-0 mt-4 w-56 rounded-2xl bg-white border border-[#EBE7D9] shadow-lg overflow-hidden z-50"
             >
               <div className="px-4 py-3 border-b border-[#F0EDE3]">
                 <p className="text-sm font-semibold text-[#1E2E24] truncate">

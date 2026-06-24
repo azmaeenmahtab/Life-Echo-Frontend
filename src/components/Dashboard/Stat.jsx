@@ -25,7 +25,7 @@ export default function DashboardStats() {
   ];
 
   return (
-    <section className="w-full max-w-7xl mx-auto px-4 py-8">
+    <section className="w-full max-w-7xl mx-auto px-4 pb-6 pt-4">
       {/* 4-Column Grid: 3 Stat Cards + 1 Primary CTA Card */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
         {/* Dynamic Stat Cards */}

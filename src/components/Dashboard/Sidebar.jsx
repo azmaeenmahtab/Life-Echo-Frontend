@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react"; // Use native state instead
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -13,6 +14,7 @@ import {
   Person,
 } from "@gravity-ui/icons";
 import { Button, Drawer } from "@heroui/react"; // Removed useDisclosure from here
+import logo from "@/assets/logo-lifeecho.png";
 
 const navItems = [
   { icon: House, label: "Home", href: "/dashboard" },
@@ -85,6 +87,29 @@ export function Sidebar() {
         aria-label="Primary"
         className="hidden md:flex flex-col gap-1 sticky top-5 self-start w-48 shrink-0"
       >
+        <Link
+          href="/home"
+          className="flex items-center gap-2.5 mb-8 mt-2 px-1 transition-transform duration-200 hover:scale-[1.02]"
+        >
+          <span className="relative w-10 h-10 rounded-full overflow-hidden bg-[#E2F0E7] ring-2 ring-white shadow-sm shrink-0">
+            <Image
+              src={logo}
+              alt="Terra Logo"
+              width={40}
+              height={40}
+              className="w-full h-full object-cover"
+              priority
+            />
+          </span>
+          <div className="flex flex-col leading-tight">
+            <span className="text-lg font-serif font-bold text-[#2D6A4F] tracking-tight">
+              Terra
+            </span>
+            <span className="text-[10px] uppercase tracking-[0.18em] text-[#7A8A80] font-semibold">
+              Personal Growth
+            </span>
+          </div>
+        </Link>
         {navItems.map((item) => {
           const isActive =
             pathname === item.href ||

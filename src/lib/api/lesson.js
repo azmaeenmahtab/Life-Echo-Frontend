@@ -43,3 +43,38 @@ export const createLesson = async (payload) => {
 
   return data?.lesson ?? data;
 };
+
+/**
+ * Fetches the list of publicly-shared lessons. Returns an array (empty
+ * on error) so callers can safely iterate without an extra null check.
+ */
+export const getPublicLessons = async () => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/lessons/public`, {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    });
+
+    let data = null;
+    try {
+      data = await response.json();
+    } catch {
+      // Non-JSON body; treat as empty list.
+    }
+
+    if (!response.ok) {
+      const error = new Error(data?.message || "Failed to load lessons");
+      error.status = response.status;
+      error.details = data;
+      throw error;
+    }
+
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.lessons)) return data.lessons;
+    return [];
+  } catch (error) {
+    console.error("getPublicLessons error:", error);
+    return [];
+  }
+};
