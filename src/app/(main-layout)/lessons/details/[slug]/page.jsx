@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 
 import { CalendarDays, Clock, Eye, Heart, Bookmark } from "lucide-react";
 
-import { Card, Chip, Avatar, Button } from "@heroui/react";
+import { Card, Chip, Avatar } from "@heroui/react";
+import Link from "next/link";
 import LessonActions from "@/components/Lessons/LessonActions";
 
 const LessonDetailsPage = async ({ params }) => {
@@ -158,10 +159,7 @@ const LessonDetailsPage = async ({ params }) => {
                 />
               ) : (
                 <div className="w-full h-full rounded-full bg-[#e2f2e9] text-[#2e7d32] flex items-center justify-center font-serif font-bold text-2xl border border-[#eae6df]">
-                  {(lesson.creatorName || "A")
-                    .trim()
-                    .charAt(0)
-                    .toUpperCase()}
+                  {(lesson.creatorName || "A").trim().charAt(0).toUpperCase()}
                 </div>
               )}
             </div>
@@ -177,27 +175,30 @@ const LessonDetailsPage = async ({ params }) => {
             {/* Author Quick Metrics */}
             <div className="flex gap-6 justify-center w-full my-2 border-t border-b border-slate-100 py-3">
               <div>
-                <p className="font-bold text-[#1c2833] text-lg">24</p>
+                <p className="font-bold text-[#1c2833] text-lg">
+                  {formatStat(lesson.creatorLessonsCount)}
+                </p>
                 <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
                   Lessons
                 </p>
               </div>
               <div className="border-l border-slate-100" />
               <div>
-                <p className="font-bold text-[#1c2833] text-lg">12K</p>
+                <p className="font-bold text-[#1c2833] text-lg">
+                  {formatStat(lesson.creatorStudentsCount)}
+                </p>
                 <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
                   Students
                 </p>
               </div>
             </div>
 
-            <Button
-              size="md"
-              variant="bordered"
-              className="mt-4 w-full border-[#cbd5e1] text-[#475569] font-medium hover:bg-slate-50 rounded-xl transition-all"
+            <Link
+              href={`/profile/${lesson.creatorId ?? lesson.creatorName ?? ""}`}
+              className="mt-4 w-full inline-flex items-center justify-center px-4 h-10 border border-[#cbd5e1] text-[#475569] font-medium hover:bg-slate-50 rounded-xl transition-all text-sm"
             >
               View all lessons
-            </Button>
+            </Link>
           </Card>
 
           {/* Card 3: Social Engagement Stats */}
