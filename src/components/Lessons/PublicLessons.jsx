@@ -51,7 +51,7 @@ export default function PublicLessons({ lessonsData }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F2EB] py-16 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F5F2EB] pb-8  px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         {/* <header className="text-center mb-16 space-y-3">
@@ -161,9 +161,8 @@ export default function PublicLessons({ lessonsData }) {
                     </span>
                   </div>
 
-                  {/* Clean Semantic Query Params Navigation Link */}
                   <Link
-                    href={`/lessons/details?id=${lessonId}`}
+                    href={`/lessons/details/${lessonId}`}
                     className="flex items-center gap-1 text-sm font-sans font-bold text-[#467856] hover:text-[#386145] transition-colors group/btn"
                   >
                     See Details

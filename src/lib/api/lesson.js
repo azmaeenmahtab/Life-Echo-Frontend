@@ -89,3 +89,32 @@ export const getPublicLessons = async (query = {}) => {
     return [];
   }
 };
+
+export const getLessonById = async (id) => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/lessons/${id}`, {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    });
+
+    let data = null;
+    try {
+      data = await response.json();
+    } catch {
+      // Non-JSON body; fall through to the generic error below.
+    }
+
+    if (!response.ok) {
+      const error = new Error(data?.message || "Failed to load lesson");
+      error.status = response.status;
+      error.details = data;
+      throw error;
+    }
+
+    return data?.lesson ?? data;
+  } catch (error) {
+    console.error("getLessonById error:", error);
+    return null;
+  }
+};

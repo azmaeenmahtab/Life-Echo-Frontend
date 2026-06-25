@@ -16,7 +16,7 @@ const PublicLessonsPage = async ({ searchParams }) => {
   const lessonsData = await getPublicLessons(queryPayload);
 
   return (
-    <div className="min-h-screen bg-[#F5F2EB] py-20 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F5F2EB] py-30 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Shared Header Section */}
         <header className="text-center mb-10 space-y-3">
