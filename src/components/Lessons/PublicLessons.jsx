@@ -54,7 +54,7 @@ export default function PublicLessons({ lessonsData }) {
     <div className="min-h-screen bg-[#F5F2EB] py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
-        <header className="text-center mb-16 space-y-3">
+        {/* <header className="text-center mb-16 space-y-3">
           <h1 className="text-4xl font-serif font-bold text-[#1E2E24] tracking-tight relative inline-block pb-3">
             Why Learning From Life Matters
             <span className="absolute bottom-0 left-1/4 right-1/4 h-[3px] bg-[#8B7E66] rounded-full"></span>
@@ -63,7 +63,7 @@ export default function PublicLessons({ lessonsData }) {
             Browse publicly shared wisdom from our global collective of growing
             minds.
           </p>
-        </header>
+        </header> */}
 
         {/* 3-Column Content Layout Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

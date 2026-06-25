@@ -48,9 +48,20 @@ export const createLesson = async (payload) => {
  * Fetches the list of publicly-shared lessons. Returns an array (empty
  * on error) so callers can safely iterate without an extra null check.
  */
-export const getPublicLessons = async () => {
+export const getPublicLessons = async (query = {}) => {
   try {
-    const response = await fetch(`${BASE_URL}/api/lessons/public`, {
+    const params = new URLSearchParams();
+    if (query.category) params.set("category", query.category);
+    if (query.tone) params.set("tone", query.tone);
+    if (query.keywords) params.set("keywords", query.keywords);
+    if (query.sortby) params.set("sortby", query.sortby);
+
+    const queryString = params.toString();
+    const url = `${BASE_URL}/api/lessons/public${
+      queryString ? `?${queryString}` : ""
+    }`;
+
+    const response = await fetch(url, {
       method: "GET",
       credentials: "include",
       cache: "no-store",
