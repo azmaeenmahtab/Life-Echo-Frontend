@@ -97,7 +97,11 @@ const LessonDetailsPage = async ({ params }) => {
 
           {/* Action Buttons (Liked, Save to Favorites, Share, Report) */}
           <div className="mt-12 pt-6 border-t border-[#e2e8f0]">
-            <LessonActions />
+            <LessonActions
+              lessonId={lesson._id ?? lesson.id}
+              userId={session?.user?.id}
+              
+            />
           </div>
         </section>
 

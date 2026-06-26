@@ -11,6 +11,7 @@
   "dependencies": {
     "@better-auth/mongo-adapter": "^1.6.19",
     "@fortawesome/fontawesome-svg-core": "^7.2.0",
+    "@fortawesome/free-regular-svg-icons": "^7.3.0",
     "@fortawesome/free-solid-svg-icons": "^7.2.0",
     "@fortawesome/react-fontawesome": "^3.3.1",
     "@heroui/react": "^3.2.1",
