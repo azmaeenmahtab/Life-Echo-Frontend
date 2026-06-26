@@ -1,3 +1,6 @@
+import dns from "node:dns";
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
+
 import { Poppins, Roboto_Slab } from "next/font/google";
 import "./globals.css";
 

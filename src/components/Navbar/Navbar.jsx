@@ -14,9 +14,15 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
+// Maximum time we'll wait for the session check before falling back to
+// the unauthenticated UI (Sign In / Sign Up). Prevents the navbar from
+// hanging on "Loading…" if the session endpoint is slow or unreachable.
+const SESSION_TIMEOUT_MS = 4000;
+
 export default function Navbar() {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
   const dropdownRef = useRef(null);
 
   // Better-Auth Session management hook
@@ -24,6 +30,21 @@ export default function Navbar() {
   console.log("session ", session);
   const user = session?.user;
   console.log("Current User Session:", user);
+
+  // Treat the session as resolved (empty) once the timeout elapses, so the
+  // user can still interact with the navbar instead of staring at a spinner.
+  useEffect(() => {
+    if (!isPending) {
+      setTimedOut(false);
+      return;
+    }
+    const t = setTimeout(() => setTimedOut(true), SESSION_TIMEOUT_MS);
+    return () => clearTimeout(t);
+  }, [isPending]);
+
+  // Once we've timed out, behave as if the session check finished with no user.
+  const sessionResolved = !isPending || timedOut;
+  const showLoggedIn = sessionResolved && !!session;
 
   // Handle outside click closures to automatically shut the dialogue box
   useEffect(() => {
@@ -105,7 +126,7 @@ export default function Navbar() {
 
         {/* Right: Auth Actions with Dropdown */}
         <div className=" " ref={dropdownRef}>
-          {isPending ? (
+          {isPending && !timedOut ? (
             // Prevent any auth action while the session is still resolving
             <div
               className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/40 text-sm font-semibold text-gray-500 cursor-not-allowed select-none"
@@ -115,7 +136,7 @@ export default function Navbar() {
               <span className="w-4 h-4 rounded-full border-2 border-gray-300 border-t-[#4D7C5D] animate-spin" />
               <span>Loading…</span>
             </div>
-          ) : session ? (
+          ) : showLoggedIn ? (
             <div className="relative">
               {user?.plan == "pro" && (
                 <div className="absolute bg-transparent -top-2 -right-2  font-bold  w-5 h-5 flex items-center justify-center ">
