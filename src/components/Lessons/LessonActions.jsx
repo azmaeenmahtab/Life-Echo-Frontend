@@ -117,8 +117,9 @@ export default function LessonActions({
   const onReport = () => {
     if (!canInteract || reported) return;
 
-    // Pure target execution: Trigger the basic text modal open function
-    openReportModal();
+    // Pass lesson/user context into the modal so the submit handler
+    // can call the backend without having to thread props.
+    openReportModal({ lessonId, userId });
   };
 
   return (
