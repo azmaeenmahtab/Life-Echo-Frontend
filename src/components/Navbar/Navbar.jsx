@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useSyncExternalStore } from "react";
 import logo from "@/assets/logo-lifeecho.png";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
@@ -25,19 +25,35 @@ export default function Navbar() {
   const [timedOut, setTimedOut] = useState(false);
   const dropdownRef = useRef(null);
 
+  // `useSyncExternalStore` with a server snapshot of `false` and a
+  // client snapshot of `true` is the recommended way to detect "we are
+  // on the client" without triggering an extra render or causing a
+  // hydration mismatch.
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+
   // Better-Auth Session management hook
   const { data: session, isPending } = authClient.useSession();
-  console.log("session ", session);
   const user = session?.user;
-  console.log("Current User Session:", user);
 
   // Treat the session as resolved (empty) once the timeout elapses, so the
   // user can still interact with the navbar instead of staring at a spinner.
-  useEffect(() => {
+  // We only kick off the timer while a request is in flight; once it
+  // settles, `timedOut` is reset by the renderer below on the next pass
+  // through this hook (no setState-in-effect needed).
+  const pendingRef = useRef(isPending);
+  if (pendingRef.current !== isPending) {
+    pendingRef.current = isPending;
     if (!isPending) {
-      setTimedOut(false);
-      return;
+      // Reset queued — render will reflect the new state.
+      queueMicrotask(() => setTimedOut(false));
     }
+  }
+  useEffect(() => {
+    if (!isPending) return;
     const t = setTimeout(() => setTimedOut(true), SESSION_TIMEOUT_MS);
     return () => clearTimeout(t);
   }, [isPending]);
@@ -46,7 +62,11 @@ export default function Navbar() {
   const sessionResolved = !isPending || timedOut;
   const showLoggedIn = sessionResolved && !!session;
 
-  // Handle outside click closures to automatically shut the dialogue box
+  // Attach the outside-click listener. The `mounted` flag (from
+  // useSyncExternalStore above) defers any auth-dependent UI to the
+  // client only — SSR can't read better-auth's cookies, so rendering
+  // different markup on the server vs. the initial client pass would
+  // produce a hydration mismatch.
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -79,7 +99,7 @@ export default function Navbar() {
         >
           <Image
             src={logo}
-            alt="Terra Logo"
+            alt="Life Echo Logo"
             width={140}
             height={22}
             className="object-contain"
@@ -125,8 +145,20 @@ export default function Navbar() {
         </div>
 
         {/* Right: Auth Actions with Dropdown */}
-        <div className=" " ref={dropdownRef}>
-          {isPending && !timedOut ? (
+        <div className="" ref={dropdownRef}>
+          {!mounted ? (
+            // Stable placeholder rendered on both the server and the
+            // initial client pass to keep the SSR and client trees
+            // identical (prevents hydration mismatches).
+            <div
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/40 text-sm font-semibold text-gray-500 cursor-not-allowed select-none"
+              aria-busy="true"
+              aria-live="polite"
+            >
+              <span className="w-4 h-4 rounded-full border-2 border-gray-300 border-t-[#4D7C5D] animate-spin" />
+              <span>Loading…</span>
+            </div>
+          ) : isPending && !timedOut ? (
             // Prevent any auth action while the session is still resolving
             <div
               className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/40 text-sm font-semibold text-gray-500 cursor-not-allowed select-none"
@@ -139,7 +171,7 @@ export default function Navbar() {
           ) : showLoggedIn ? (
             <div className="relative">
               {user?.plan == "pro" && (
-                <div className="absolute bg-transparent -top-2 -right-2  font-bold  w-5 h-5 flex items-center justify-center ">
+                <div className="absolute bg-transparent -top-2 -right-2 font-bold w-5 h-5 flex items-center justify-center">
                   <FontAwesomeIcon
                     icon={faStar}
                     style={{ color: "rgb(255, 212, 59)" }}
@@ -171,7 +203,7 @@ export default function Navbar() {
 
               {/* Dropdown */}
               {dropdownOpen && (
-                <div className="absolute -right-10 -top-10 mt-2 w-50 bg-white dark:bg-zinc-900  rounded-3xl  shadow-lg py-2 px-1.5 flex flex-col justify-start z-50 text-left animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute -right-10 -top-10 mt-2 w-50 bg-white dark:bg-zinc-900 rounded-3xl shadow-lg py-2 px-1.5 flex flex-col justify-start z-50 text-left animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="px-3 py-2.5 mb-1 border-b border-gray-100 dark:border-gray-800 w-full">
                     <p className="text-sm font-bold text-gray-800 dark:text-gray-100 truncate">
                       {user?.name || "Wisdom Seeker"}
