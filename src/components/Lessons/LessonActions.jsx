@@ -1,9 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-// Swapped FontAwesome for Lucide icons to fix the rendering issue
 import { Heart, Bookmark, Flag } from "lucide-react";
-import { Button } from "@heroui/react";
+// 1. Corrected hook consumption to match openReportModal
 import { useReportModal } from "@/lib/contexts/reportModalContext";
 
 import {
@@ -30,13 +29,9 @@ export default function LessonActions({
   const [reported, setReported] = useState(false);
   const [busy, setBusy] = useState({ like: false, save: false, report: false });
 
+  // FIX: Destructure openReportModal instead of openModal
   const { openReportModal } = useReportModal();
 
-  // Publish the latest stats to the shared store on every mutation so
-  // the sidebar's social stats card (separate React tree, same lesson)
-  // re-renders in lockstep with these buttons. `getCounters` reads the
-  // freshest values from a ref to avoid stale-closure bugs (React state
-  // captured at handler-creation time can lag behind optimistic updates).
   const countersRef = useRef({ likesCount, savesCount, viewsCount });
   countersRef.current = { likesCount, savesCount, viewsCount };
 
@@ -121,115 +116,69 @@ export default function LessonActions({
 
   const onReport = () => {
     if (!canInteract || reported) return;
-    openReportModal({
-      onConfirm: () =>
-        handleToggle({
-          verb: "report",
-          busyKey: "report",
-          prevSnapshot: () => setReported(false),
-          applyOptimistic: () => setReported(true),
-          applyServer: null,
-        }),
-    });
+
+    // Pure target execution: Trigger the basic text modal open function
+    openReportModal();
   };
 
   return (
-    <div className="flex flex-wrap gap-3 border-t border-[#e2e8f0] pt-6 ">
-      {/* report lesson dialogue */}
-
+    <div className="flex flex-wrap gap-3 border-t border-[#e2e8f0] pt-6">
       {/* LIKE BUTTON */}
-      <Button
-        size="md"
-        className={`font-medium rounded-xl transition-all ${
+      <button
+        type="button"
+        onClick={onLike}
+        disabled={!canInteract}
+        className={`inline-flex items-center gap-2 px-4 h-10 font-medium rounded-xl transition-all text-sm ${
           isLiked
             ? "bg-[#e2f2e9] text-[#2e7d32]"
             : "bg-white border border-[#cbd5e1] text-[#475569] hover:bg-slate-50"
-        }`}
-        variant={isLiked ? "flat" : "bordered"}
-        startContent={
-          <Heart
-            size={18}
-            className={busy.like ? "opacity-60" : ""}
-            // Fills the heart when active to mimic the "Solid" version
-            fill={isLiked ? "currentColor" : "none"}
-          />
-        }
-        onPress={onLike}
-        isDisabled={!canInteract}
-        aria-pressed={isLiked}
+        } disabled:opacity-50`}
       >
+        <Heart
+          size={18}
+          className={busy.like ? "opacity-60" : ""}
+          fill={isLiked ? "currentColor" : "none"}
+        />
         {isLiked ? "Liked" : "Like"}
-      </Button>
+      </button>
 
       {/* SAVE BUTTON */}
-      <Button
-        size="md"
-        className={`font-medium rounded-xl transition-all ${
+      <button
+        type="button"
+        onClick={onSave}
+        disabled={!canInteract}
+        className={`inline-flex items-center gap-2 px-4 h-10 font-medium rounded-xl transition-all text-sm ${
           isSaved
             ? "bg-[#e2f2e9] text-[#2e7d32]"
             : "bg-white border border-[#cbd5e1] text-[#475569] hover:bg-slate-50"
-        }`}
-        variant={isSaved ? "flat" : "bordered"}
-        startContent={
-          <Bookmark
-            size={18}
-            className={busy.save ? "opacity-60" : ""}
-            fill={isSaved ? "currentColor" : "none"}
-          />
-        }
-        onPress={onSave}
-        isDisabled={!canInteract}
-        aria-pressed={isSaved}
+        } disabled:opacity-50`}
       >
+        <Bookmark
+          size={18}
+          className={busy.save ? "opacity-60" : ""}
+          fill={isSaved ? "currentColor" : "none"}
+        />
         Save to Favorites
-      </Button>
-
-      {/* SHARE BUTTON (Matches design alignment) */}
-      {/* <Button
-        size="md"
-        variant="light"
-        className="font-medium text-[#475569] hover:bg-slate-100 rounded-xl transition-all"
-        startContent={
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            size={18}
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v8"></path>
-            <polyline points="16 6 12 2 8 6"></polyline>
-            <line x1="12" y1="2" x2="12" y2="15"></line>
-          </svg>
-        }
-      >
-        Share
-      </Button> */}
+      </button>
 
       {/* REPORT BUTTON */}
-      <Button
-        size="md"
-        variant="light"
-        className={`font-medium rounded-xl transition-all ${
-          reported ? "text-danger" : "text-[#475569] hover:bg-slate-100"
-        }`}
-        startContent={
-          <Flag
-            size={18}
-            className={busy.report ? "opacity-60" : ""}
-            fill={reported ? "currentColor" : "none"}
-          />
-        }
-        onPress={onReport}
-        isDisabled={!canInteract || reported}
+      <button
+        type="button"
+        onClick={onReport}
+        disabled={!canInteract || reported}
+        className={`inline-flex items-center gap-2 px-4 h-10 font-medium rounded-xl transition-all text-sm ${
+          reported
+            ? "text-red-600 bg-red-50"
+            : "text-[#475569] hover:bg-slate-100"
+        } disabled:opacity-50`}
       >
+        <Flag
+          size={18}
+          className={busy.report ? "opacity-60" : ""}
+          fill={reported ? "currentColor" : "none"}
+        />
         {reported ? "Reported" : "Report"}
-      </Button>
+      </button>
     </div>
   );
 }

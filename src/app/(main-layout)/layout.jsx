@@ -5,14 +5,14 @@ import { ReportModalContextProvider } from "@/lib/contexts/reportModalContext";
 
 const MainLayout = ({ children }) => {
   return (
-    <div>
-      <Navbar />
-      <ReportModalContextProvider>
+    <ReportModalContextProvider>
+      <div>
+        <Navbar />
         {children}
+        <Footer />
         <ReportModal />
-      </ReportModalContextProvider>
-      <Footer />
-    </div>
+      </div>
+    </ReportModalContextProvider>
   );
 };
 

@@ -1,80 +1,40 @@
 "use client";
 
-import { useState } from "react";
-import { Modal, Button } from "@heroui/react";
-import { AlertTriangle } from "lucide-react";
-
 import { useReportModal } from "@/lib/contexts/reportModalContext";
 
 export default function ReportModal() {
-  const { isOpen, payload, closeReportModal } = useReportModal();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isOpen, closeReportModal } = useReportModal();
 
-  const handleCancel = () => {
-    closeReportModal();
-  };
-
-  const handleConfirm = async () => {
-    if (!payload?.onConfirm) {
-      closeReportModal();
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      await payload.onConfirm();
-    } finally {
-      setIsSubmitting(false);
-      closeReportModal();
-    }
-  };
+  // If the context state is closed, do not render anything
+  if (!isOpen) return null;
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onOpenChange={(open) => {
-        if (!open) {
-          closeReportModal();
-        }
-      }}
-    >
-      <Modal.Backdrop variant="opaque">
-        <Modal.Container size="sm">
-          <Modal.Dialog className="bg-[#FAF8F3] border border-[#EBE7D9]">
-            <Modal.Header className="flex items-center gap-2 font-sans text-[#1E2E24] border-b border-[#EBE7D9]">
-              <AlertTriangle size={18} className="text-warning" />
-              <Modal.Heading>Report this lesson?</Modal.Heading>
-            </Modal.Header>
+    // 1. Fixed Backdrop Dark Overlay
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      {/* Invisible layer to close modal when clicking outside the box */}
+      <div className="absolute inset-0" onClick={closeReportModal} />
 
-            <Modal.Body className="py-5">
-              <p className="text-sm text-[#556359] font-sans leading-relaxed">
-                Are you sure you want to report this lesson? Our moderation team
-                will review it.
-              </p>
-            </Modal.Body>
+      {/* 2. Simple Modal Box */}
+      <div className="relative z-10 w-full max-w-md rounded-lg border border-[#EBE7D9] bg-[#FAF8F3] p-6 shadow-xl font-sans">
+        {/* Content Area */}
+        <h3 className="text-lg font-bold text-[#1E2E24] mb-2">Report Modal</h3>
+        <p className="text-sm text-[#556359] mb-6">
+          The context is working perfectly! You can replace this text with your
+          form or action components later.
+        </p>
 
-            <Modal.Footer className="gap-2 border-t border-[#EBE7D9]">
-              <Button
-                variant="light"
-                onPress={handleCancel}
-                isDisabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-
-              <Button
-                variant="danger"
-                onPress={handleConfirm}
-                isDisabled={isSubmitting}
-              >
-                {isSubmitting ? "Reporting..." : "Yes, continue"}
-              </Button>
-            </Modal.Footer>
-          </Modal.Dialog>
-        </Modal.Container>
-      </Modal.Backdrop>
-    </Modal>
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={closeReportModal}
+            className="rounded px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 

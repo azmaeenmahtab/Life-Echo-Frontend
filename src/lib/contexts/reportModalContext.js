@@ -13,24 +13,14 @@ const ReportModalContext = createContext(null);
 
 export function ReportModalContextProvider({ children }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [payload, setPayload] = useState(null);
 
-  const openReportModal = useCallback((nextPayload) => {
-    setPayload(nextPayload ?? null); // was missing — payload never got stored
-    setIsOpen(true);
-  }, []);
-
-  const closeReportModal = useCallback(() => {
-    setIsOpen(false);
-  }, []);
-
-  const value = useMemo(
-    () => ({ isOpen, payload, openReportModal, closeReportModal }),
-    [isOpen, payload, openReportModal, closeReportModal],
-  );
+  const openReportModal = () => setIsOpen(true);
+  const closeReportModal = () => setIsOpen(false);
 
   return (
-    <ReportModalContext.Provider value={value}>
+    <ReportModalContext.Provider
+      value={{ isOpen, openReportModal, closeReportModal }}
+    >
       {children}
     </ReportModalContext.Provider>
   );
