@@ -8,6 +8,7 @@ import { Card, Chip, Avatar } from "@heroui/react";
 import Link from "next/link";
 import LessonEngagement from "@/components/Lessons/LessonEngagement";
 import LessonSocialStats from "@/components/Lessons/LessonSocialStats";
+import { CommentSection } from "@/components/Lessons/CommentSection";
 
 const LessonDetailsPage = async ({ params }) => {
   const { slug } = await params;
@@ -42,13 +43,9 @@ const LessonDetailsPage = async ({ params }) => {
     ? savedBy.some((id) => toIdString(id) === uid)
     : false;
   const initialLikesCount =
-    typeof lesson?.likesCount === "number"
-      ? lesson.likesCount
-      : likedBy.length;
+    typeof lesson?.likesCount === "number" ? lesson.likesCount : likedBy.length;
   const initialSavesCount =
-    typeof lesson?.savesCount === "number"
-      ? lesson.savesCount
-      : savedBy.length;
+    typeof lesson?.savesCount === "number" ? lesson.savesCount : savedBy.length;
 
   if (userPlan === "free" && lesson.accessLevel === "premium") {
     redirect("/pricing");
@@ -137,6 +134,11 @@ const LessonDetailsPage = async ({ params }) => {
             }
             initialIsLiked={initialIsLiked}
             initialIsSaved={initialIsSaved}
+          />
+
+          <CommentSection
+            lessonId={lesson._id ?? lesson.id}
+            userId={currentUserId}
           />
         </section>
 

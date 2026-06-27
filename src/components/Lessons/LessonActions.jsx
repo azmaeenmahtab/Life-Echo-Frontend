@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 // Swapped FontAwesome for Lucide icons to fix the rendering issue
 import { Heart, Bookmark, Flag } from "lucide-react";
 import { Button } from "@heroui/react";
+import { useReportModal } from "@/lib/contexts/reportModalContext";
 
 import {
   toggleLikeLesson,
@@ -28,6 +29,8 @@ export default function LessonActions({
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const [reported, setReported] = useState(false);
   const [busy, setBusy] = useState({ like: false, save: false, report: false });
+
+  const { openReportModal } = useReportModal();
 
   // Publish the latest stats to the shared store on every mutation so
   // the sidebar's social stats card (separate React tree, same lesson)
@@ -116,17 +119,24 @@ export default function LessonActions({
       },
     });
 
-  const onReport = () =>
-    handleToggle({
-      verb: "report",
-      busyKey: "report",
-      prevSnapshot: () => setReported(false),
-      applyOptimistic: () => setReported(true),
-      applyServer: null,
+  const onReport = () => {
+    if (!canInteract || reported) return;
+    openReportModal({
+      onConfirm: () =>
+        handleToggle({
+          verb: "report",
+          busyKey: "report",
+          prevSnapshot: () => setReported(false),
+          applyOptimistic: () => setReported(true),
+          applyServer: null,
+        }),
     });
+  };
 
   return (
-    <div className="flex flex-wrap gap-3 border-t border-[#e2e8f0] pt-6 mt-12">
+    <div className="flex flex-wrap gap-3 border-t border-[#e2e8f0] pt-6 ">
+      {/* report lesson dialogue */}
+
       {/* LIKE BUTTON */}
       <Button
         size="md"

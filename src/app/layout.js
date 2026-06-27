@@ -2,8 +2,9 @@ import dns from "node:dns";
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 import { Poppins, Roboto_Slab } from "next/font/google";
-import "@fortawesome/fontawesome-svg-core/styles.css";
 import "./globals.css";
+import { ReportModalContextProvider } from "@/lib/contexts/reportModalContext";
+import ReportModal from "@/components/Modals/reportModal";
 
 // Load Poppins for overall UI readability
 const poppins = Poppins({
@@ -32,7 +33,8 @@ export default function RootLayout({ children }) {
     >
       {/* font-poppins added here applies it universally so you don't need it everywhere */}
       <body className="min-h-full flex flex-col bg-[#FAF8F5] font-poppins text-gray-700">
-        {children}
+           {children}
+           
       </body>
     </html>
   );

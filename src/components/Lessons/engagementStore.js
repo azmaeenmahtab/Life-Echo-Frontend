@@ -57,13 +57,19 @@ export const setEngagementStats = (lessonId, value) => {
 };
 
 /**
- * React hook returning the latest stats snapshot for a lesson (or null
- * if no owner has published one yet for this id). Components that read
- * this hook re-render whenever `setEngagementStats` fires.
+ * React hook returning the latest stats snapshot for a lesson. If no
+ * publisher has mounted yet for this id (e.g. the sidebar renders
+ * before the action buttons), the snapshot is `null`; `fallback` is
+ * returned instead so consumers can keep rendering initial values.
+ *
+ * Components that read this hook re-render whenever `setEngagementStats`
+ * fires for the same lesson id.
  */
-export const useEngagementStats = (lessonId) =>
-  useSyncExternalStore(
+export const useEngagementStats = (lessonId, fallback = null) => {
+  const snapshot = useSyncExternalStore(
     subscribe(lessonId),
     () => getSnapshot(lessonId),
     getServerSnapshot,
   );
+  return snapshot ?? fallback;
+};

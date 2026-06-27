@@ -31,7 +31,7 @@ export default function LessonEngagement({
   }, [lessonId, initialLikesCount, initialSavesCount, initialViewsCount]);
 
   return (
-    <div className="mt-12 pt-6 border-t border-[#e2e8f0]">
+    <div className=" pt-6 ">
       <LessonActions
         lessonId={lessonId}
         userId={currentUserId}
