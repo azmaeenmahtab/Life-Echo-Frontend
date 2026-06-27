@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 // Swapped FontAwesome for Lucide icons to fix the rendering issue
 import { Heart, Bookmark, Flag } from "lucide-react";
 import { Button } from "@heroui/react";
@@ -10,21 +10,41 @@ import {
   toggleSaveLesson,
   reportLesson,
 } from "@/lib/actions/lessonActions";
+import { setEngagementStats } from "@/components/Lessons/engagementStore";
 
 export default function LessonActions({
   lessonId,
   userId,
   initialLikesCount = 0,
   initialSavesCount = 0,
+  initialViewsCount = 0,
   initialIsLiked = false,
   initialIsSaved = false,
 }) {
   const [likesCount, setLikesCount] = useState(initialLikesCount);
   const [savesCount, setSavesCount] = useState(initialSavesCount);
+  const [viewsCount] = useState(initialViewsCount);
   const [isLiked, setIsLiked] = useState(initialIsLiked);
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const [reported, setReported] = useState(false);
   const [busy, setBusy] = useState({ like: false, save: false, report: false });
+
+  // Publish the latest stats to the shared store on every mutation so
+  // the sidebar's social stats card (separate React tree, same lesson)
+  // re-renders in lockstep with these buttons. `getCounters` reads the
+  // freshest values from a ref to avoid stale-closure bugs (React state
+  // captured at handler-creation time can lag behind optimistic updates).
+  const countersRef = useRef({ likesCount, savesCount, viewsCount });
+  countersRef.current = { likesCount, savesCount, viewsCount };
+
+  const publish = (overrides = {}) => {
+    const latest = countersRef.current;
+    setEngagementStats(lessonId, {
+      likesCount: overrides.likesCount ?? latest.likesCount,
+      savesCount: overrides.savesCount ?? latest.savesCount,
+      viewsCount: overrides.viewsCount ?? latest.viewsCount,
+    });
+  };
 
   const canInteract = Boolean(userId);
 
@@ -40,6 +60,7 @@ export default function LessonActions({
 
     setBusy((b) => ({ ...b, [busyKey]: true }));
     applyOptimistic();
+    publish();
     try {
       const data = await (verb === "like"
         ? toggleLikeLesson({ lessonId, userId })
@@ -47,8 +68,10 @@ export default function LessonActions({
           ? toggleSaveLesson({ lessonId, userId })
           : reportLesson({ lessonId, userId }));
       if (applyServer) applyServer(data);
+      publish();
     } catch (err) {
       prevSnapshot();
+      publish();
       console.error(`[LessonActions] ${verb} failed:`, err);
     } finally {
       setBusy((b) => ({ ...b, [busyKey]: false }));
@@ -152,7 +175,7 @@ export default function LessonActions({
       </Button>
 
       {/* SHARE BUTTON (Matches design alignment) */}
-      <Button
+      {/* <Button
         size="md"
         variant="light"
         className="font-medium text-[#475569] hover:bg-slate-100 rounded-xl transition-all"
@@ -176,7 +199,7 @@ export default function LessonActions({
         }
       >
         Share
-      </Button>
+      </Button> */}
 
       {/* REPORT BUTTON */}
       <Button

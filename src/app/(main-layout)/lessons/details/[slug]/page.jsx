@@ -2,11 +2,12 @@ import { getLessonById } from "@/lib/api/lesson";
 import { getUserSessionServer } from "@/lib/actions/userSession";
 import { redirect } from "next/navigation";
 
-import { CalendarDays, Clock, Eye, Heart, Bookmark } from "lucide-react";
+import { CalendarDays, Clock, Eye } from "lucide-react";
 
 import { Card, Chip, Avatar } from "@heroui/react";
 import Link from "next/link";
-import LessonActions from "@/components/Lessons/LessonActions";
+import LessonEngagement from "@/components/Lessons/LessonEngagement";
+import LessonSocialStats from "@/components/Lessons/LessonSocialStats";
 
 const LessonDetailsPage = async ({ params }) => {
   const { slug } = await params;
@@ -19,6 +20,35 @@ const LessonDetailsPage = async ({ params }) => {
 
   const session = await getUserSessionServer();
   const userPlan = session?.user?.plan ?? "free";
+  const currentUserId = session?.user?.id ?? null;
+
+  // Normalise membership checks: both `likedBy`/`savedBy` on the lesson and
+  // the session's user id may arrive as strings or as objects with a string
+  // `_id`, so coerce everything to a string before comparing.
+  const toIdString = (value) => {
+    if (!value) return null;
+    if (typeof value === "string") return value;
+    if (typeof value === "object" && value._id) return value._id.toString();
+    return value.toString();
+  };
+
+  const uid = toIdString(currentUserId);
+  const likedBy = Array.isArray(lesson?.likedBy) ? lesson.likedBy : [];
+  const savedBy = Array.isArray(lesson?.savedBy) ? lesson.savedBy : [];
+  const initialIsLiked = uid
+    ? likedBy.some((id) => toIdString(id) === uid)
+    : false;
+  const initialIsSaved = uid
+    ? savedBy.some((id) => toIdString(id) === uid)
+    : false;
+  const initialLikesCount =
+    typeof lesson?.likesCount === "number"
+      ? lesson.likesCount
+      : likedBy.length;
+  const initialSavesCount =
+    typeof lesson?.savesCount === "number"
+      ? lesson.savesCount
+      : savedBy.length;
 
   if (userPlan === "free" && lesson.accessLevel === "premium") {
     redirect("/pricing");
@@ -95,14 +125,19 @@ const LessonDetailsPage = async ({ params }) => {
             )}
           </div>
 
-          {/* Action Buttons (Liked, Save to Favorites, Share, Report) */}
-          <div className="mt-12 pt-6 border-t border-[#e2e8f0]">
-            <LessonActions
-              lessonId={lesson._id ?? lesson.id}
-              userId={session?.user?.id}
-              
-            />
-          </div>
+          {/* Action Buttons (Liked, Save to Favorites, Share, Report) +
+             Social Stats — both share live state via LessonEngagement */}
+          <LessonEngagement
+            lessonId={lesson._id ?? lesson.id}
+            currentUserId={currentUserId}
+            initialLikesCount={initialLikesCount}
+            initialSavesCount={initialSavesCount}
+            initialViewsCount={
+              typeof lesson?.viewsCount === "number" ? lesson.viewsCount : 0
+            }
+            initialIsLiked={initialIsLiked}
+            initialIsSaved={initialIsSaved}
+          />
         </section>
 
         {/* RIGHT SIDEBAR */}
@@ -205,35 +240,17 @@ const LessonDetailsPage = async ({ params }) => {
             </Link>
           </Card>
 
-          {/* Card 3: Social Engagement Stats */}
-          <Card className="p-5 bg-white border border-[#eae6df] shadow-sm rounded-2xl">
-            <div className="grid grid-cols-3 divide-x divide-slate-100 text-center">
-              <Stat
-                icon={
-                  <Heart size={20} className="text-emerald-600 mb-1 mx-auto" />
-                }
-                value={formatStat(lesson.likesCount)}
-                label="Likes"
-              />
-              <Stat
-                icon={
-                  <Bookmark
-                    size={20}
-                    className="text-emerald-600 mb-1 mx-auto"
-                  />
-                }
-                value={formatStat(lesson.savesCount)}
-                label="Saved"
-              />
-              <Stat
-                icon={
-                  <Eye size={20} className="text-emerald-600 mb-1 mx-auto" />
-                }
-                value={formatStat(lesson.viewsCount)}
-                label="Views"
-              />
-            </div>
-          </Card>
+          {/* Card 3: Social Engagement Stats (lives in the sidebar but
+             reads live counts from the shared engagement store so the
+             Like/Save buttons in the main column update it instantly). */}
+          <LessonSocialStats
+            lessonId={lesson._id ?? lesson.id}
+            initialLikesCount={initialLikesCount}
+            initialSavesCount={initialSavesCount}
+            initialViewsCount={
+              typeof lesson?.viewsCount === "number" ? lesson.viewsCount : 0
+            }
+          />
         </aside>
       </div>
     </main>
@@ -255,23 +272,11 @@ function Info({ icon, label, value }) {
   );
 }
 
-function Stat({ icon, value, label }) {
-  return (
-    <div className="flex flex-col justify-center items-center p-1">
-      {icon}
-      <p className="font-bold text-slate-800 text-[16px] leading-tight mt-1">
-        {value}
-      </p>
-      <p className="text-[11px] text-slate-400 font-medium">{label}</p>
-    </div>
-  );
-}
-
 /**
- * Formats a numeric stat for the social card:
+ * Compact numeric formatter used by the Author metrics card:
  *  - missing / non-number → "N/A"
  *  - < 1000              → raw integer (e.g. 342)
- *  - >= 1000             → compact form (1234 → "1.2K", 1_500_000 → "1.5M")
+ *  - >= 1000             → "1.2K" / "1.5M"
  */
 function formatStat(value) {
   if (value == null || value === "" || Number.isNaN(Number(value))) {
