@@ -122,3 +122,27 @@ export const changeLessonVisibility = async ({
 
   return readJson(response);
 };
+
+export const changeLessonAccessLevel = async ({
+  lessonId,
+  userId,
+  accessLevel,
+}) => {
+  if (!lessonId)
+    throw new Error("changeLessonAccessLevel: lessonId is required");
+  if (!userId) throw new Error("changeLessonAccessLevel: userId is required");
+  if (!accessLevel)
+    throw new Error("changeLessonAccessLevel: accessLevel is required");
+
+  const response = await fetch(
+    `${BASE_URL}/api/lessons/${lessonId}/access-level/change`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ userId, accessLevel }),
+    },
+  );
+
+  return readJson(response);
+};

@@ -15,7 +15,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { getLessonsByUserId } from "@/lib/api/lesson";
-import { changeLessonVisibility } from "@/lib/actions/lessonActions";
+import {
+  changeLessonVisibility,
+  changeLessonAccessLevel,
+} from "@/lib/actions/lessonActions";
+import toast from "react-hot-toast";
 
 export function MyLessonsTable({ user }) {
   const userId = user?.id;
@@ -44,7 +48,11 @@ export function MyLessonsTable({ user }) {
 
   // Track which lesson's visibility dropdown is open
   const [openVisibilityId, setOpenVisibilityId] = useState(null);
+  // Track which lesson's access-level dropdown is open
+  const [openAccessLevelId, setOpenAccessLevelId] = useState(null);
   const [updatingId, setUpdatingId] = useState(null);
+
+  const isPremiumUser = user?.plan === "pro";
 
   const handleVisibilityChange = async (lessonId, newVisibility) => {
     if (!newVisibility) return;
@@ -74,11 +82,52 @@ export function MyLessonsTable({ user }) {
     }
   };
 
-  const handleAccessLevelChange = (lessonId, currentAccessLevel) => {
-    console.log(
-      `Trigger access level change for lesson: ${lessonId}. Current: ${currentAccessLevel}`,
-    );
-    // TODO: Implement tier shifting configuration logic here
+  const handleAccessLevelChange = async (lessonId, currentAccessLevel) => {
+    // Toggling back to "free" is always allowed.
+    // Upgrading to "premium" requires the Pro plan.
+    if (currentAccessLevel !== "premium" && !isPremiumUser) {
+      toast.error("u must upgrade to access this feature");
+      setOpenAccessLevelId(null);
+      return;
+    }
+
+    if (openAccessLevelId === lessonId) {
+      setOpenAccessLevelId(null);
+      return;
+    }
+    setOpenAccessLevelId(lessonId);
+  };
+
+  const handleAccessLevelSelect = async (lessonId, newAccessLevel) => {
+    if (!newAccessLevel) return;
+    try {
+      setUpdatingId(lessonId);
+      const result = await changeLessonAccessLevel({
+        lessonId,
+        userId,
+        accessLevel: newAccessLevel,
+      });
+
+      setLessons((prev) =>
+        prev.map((l) =>
+          l._id === lessonId
+            ? { ...l, accessLevel: result?.accessLevel ?? newAccessLevel }
+            : l,
+        ),
+      );
+
+      toast.success(
+        `Lesson marked as ${result?.accessLevel ?? newAccessLevel}`,
+      );
+    } catch (error) {
+      console.error("Failed to update access level:", error);
+      const message =
+        error?.message || "Failed to update access level. Please try again.";
+      toast.error(message);
+    } finally {
+      setUpdatingId(null);
+      setOpenAccessLevelId(null);
+    }
   };
 
   if (loading) {
@@ -276,7 +325,7 @@ export function MyLessonsTable({ user }) {
 
                   {/* 4. Access Level Column with Change Trigger */}
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex flex-col items-start gap-1.5">
+                    <div className="flex flex-col items-start gap-1.5 relative">
                       <Chip
                         size="sm"
                         variant="flat"
@@ -293,14 +342,65 @@ export function MyLessonsTable({ user }) {
                         onClick={() =>
                           handleAccessLevelChange(
                             lesson._id,
-                            lesson.accessLevel,
+                            lesson.accessLevel || "free",
                           )
                         }
                         className="inline-flex items-center gap-0.5 text-[11px] font-bold text-[#556359] hover:text-[#b27b00] transition-colors ml-1 uppercase tracking-wider"
                       >
                         Change
-                        <ChevronDown size={12} />
+                        <ChevronDown
+                          size={12}
+                          className={`transition-transform duration-200 ${
+                            openAccessLevelId === lesson._id ? "rotate-180" : ""
+                          }`}
+                        />
                       </button>
+
+                      {openAccessLevelId === lesson._id && (
+                        <div
+                          className="absolute left-0 top-full mt-1 z-20 min-w-[140px] bg-[#FAF8F3] border border-[#EBE7D9] rounded-xl shadow-xl py-1 animate-in fade-in slide-in-from-top-1 duration-150"
+                          onMouseLeave={() => setOpenAccessLevelId(null)}
+                        >
+                          {["free", "premium"].map((option) => {
+                            const isActive =
+                              (lesson.accessLevel || "free") === option;
+                            const isLocked =
+                              option === "premium" && !isPremiumUser;
+                            return (
+                              <button
+                                key={option}
+                                type="button"
+                                disabled={updatingId === lesson._id || isLocked}
+                                onClick={() =>
+                                  handleAccessLevelSelect(lesson._id, option)
+                                }
+                                className={`w-full text-left px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-colors flex items-center justify-between ${
+                                  isActive
+                                    ? "text-[#b27b00] bg-amber-50"
+                                    : isLocked
+                                      ? "text-[#A0AEA4] cursor-not-allowed"
+                                      : "text-[#556359] hover:bg-[#F2EFE6] hover:text-[#1E2E24]"
+                                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                              >
+                                <span className="inline-flex items-center gap-1.5">
+                                  {option}
+                                  {isLocked && (
+                                    <span
+                                      title="Upgrade to Pro"
+                                      className="inline-flex items-center justify-center text-[8px] font-bold bg-[#FAF8F3] border border-[#EBE7D9] text-[#b27b00] rounded px-1 py-0.5"
+                                    >
+                                      PRO
+                                    </span>
+                                  )}
+                                </span>
+                                {isActive && (
+                                  <span className="text-[#b27b00]">✓</span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   </td>
 

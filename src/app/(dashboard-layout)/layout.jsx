@@ -3,6 +3,7 @@
 import DashboardNavbar from "@/components/Dashboard/DashboardNavbar";
 import { Sidebar } from "@/components/Dashboard/Sidebar";
 import React, { createContext, useContext } from "react";
+import { Toaster } from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
 
 /**
@@ -36,6 +37,7 @@ const DashboardLayout = ({ children }) => {
           </main>
         </div>
         {/* footer */}
+        <Toaster position="top-right" reverseOrder={false} />
       </div>
     </DashboardSessionContext.Provider>
   );
