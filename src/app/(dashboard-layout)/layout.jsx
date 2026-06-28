@@ -2,9 +2,13 @@
 
 import DashboardNavbar from "@/components/Dashboard/DashboardNavbar";
 import { Sidebar } from "@/components/Dashboard/Sidebar";
+import LessonUpdateModal from "@/components/Modals/lessonUpdateModal";
+import LessonDeleteModal from "@/components/Modals/lessonDeleteModal";
 import React, { createContext, useContext } from "react";
 import { Toaster } from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
+import { LessonUpdateModalContextProvider } from "@/lib/contexts/lessonUpdateModalContext";
+import { LessonDeleteModalContextProvider } from "@/lib/contexts/lessonDeleteModalContext";
 
 /**
  * Single source of truth for the Better-Auth session inside the dashboard.
@@ -25,20 +29,26 @@ const DashboardLayout = ({ children }) => {
 
   return (
     <DashboardSessionContext.Provider value={{ session, isPending, error }}>
-      <div className="min-h-screen bg-[#F5F2EB]">
-        <div className="mx-auto flex w-full max-w-380 gap-6 py-5 px-4 md:px-8">
-          {/* Persistent desktop sidebar / mobile drawer trigger */}
-          <Sidebar />
+      <LessonUpdateModalContextProvider>
+        <LessonDeleteModalContextProvider>
+          <div className="min-h-screen bg-[#F5F2EB]">
+            <div className="mx-auto flex w-full max-w-380 gap-6 py-5 px-4 md:px-8">
+              {/* Persistent desktop sidebar / mobile drawer trigger */}
+              <Sidebar />
 
-          {/* Main column */}
-          <main className="flex min-w-0 flex-1 flex-col">
-            <DashboardNavbar session={session} isPending={isPending} />
-            <div className="flex-1">{children}</div>
-          </main>
-        </div>
-        {/* footer */}
-        <Toaster position="top-right" reverseOrder={false} />
-      </div>
+              {/* Main column */}
+              <main className="flex min-w-0 flex-1 flex-col">
+                <DashboardNavbar session={session} isPending={isPending} />
+                <div className="flex-1">{children}</div>
+              </main>
+            </div>
+            {/* Modals & toaster */}
+            <LessonUpdateModal session={session} />
+            <LessonDeleteModal session={session} />
+            <Toaster position="top-right" reverseOrder={false} />
+          </div>
+        </LessonDeleteModalContextProvider>
+      </LessonUpdateModalContextProvider>
     </DashboardSessionContext.Provider>
   );
 };

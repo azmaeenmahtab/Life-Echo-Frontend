@@ -146,3 +146,44 @@ export const changeLessonAccessLevel = async ({
 
   return readJson(response);
 };
+
+/**
+ * Update an existing lesson.
+ *
+ * Sends PUT /api/lessons/:id with the editable fields. User identity is
+ * forwarded via `userId` so the backend can enforce the owner-only check.
+ */
+export const updateLesson = async ({ lessonId, userId, ...patch }) => {
+  if (!lessonId) throw new Error("updateLesson: lessonId is required");
+  if (!userId) throw new Error("updateLesson: userId is required");
+
+  const response = await fetch(`${BASE_URL}/api/lessons/${lessonId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ userId, ...patch }),
+  });
+
+  return readJson(response);
+};
+
+/**
+ * Delete a lesson.
+ *
+ * Sends DELETE /api/lessons/:id with `userId` in the body so the backend
+ * can enforce owner-only deletion. Returns the server's
+ * `{ message, lessonId }` payload on success.
+ */
+export const deleteLesson = async ({ lessonId, userId }) => {
+  if (!lessonId) throw new Error("deleteLesson: lessonId is required");
+  if (!userId) throw new Error("deleteLesson: userId is required");
+
+  const response = await fetch(`${BASE_URL}/api/lessons/${lessonId}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ userId }),
+  });
+
+  return readJson(response);
+};

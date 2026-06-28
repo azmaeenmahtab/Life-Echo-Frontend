@@ -19,6 +19,8 @@ import {
   changeLessonVisibility,
   changeLessonAccessLevel,
 } from "@/lib/actions/lessonActions";
+import { useLessonUpdateModal } from "@/lib/contexts/lessonUpdateModalContext";
+import { useLessonDeleteModal } from "@/lib/contexts/lessonDeleteModalContext";
 import toast from "react-hot-toast";
 
 export function MyLessonsTable({ user }) {
@@ -27,6 +29,8 @@ export function MyLessonsTable({ user }) {
     redirect("/auth/login");
   }
 
+  const { openLessonUpdateModal, updatedLesson } = useLessonUpdateModal();
+  const { openLessonDeleteModal, deletedLessonId } = useLessonDeleteModal();
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -45,6 +49,20 @@ export function MyLessonsTable({ user }) {
 
     loadLessons();
   }, [user.id]);
+
+  // Patch the row in place whenever the update modal reports a successful save.
+  useEffect(() => {
+    if (!updatedLesson?._id) return;
+    setLessons((prev) =>
+      prev.map((l) => (l._id === updatedLesson._id ? { ...l, ...updatedLesson } : l)),
+    );
+  }, [updatedLesson]);
+
+  // Drop the row whenever the delete modal reports a successful delete.
+  useEffect(() => {
+    if (!deletedLessonId) return;
+    setLessons((prev) => prev.filter((l) => l._id !== deletedLessonId));
+  }, [deletedLessonId]);
 
   // Track which lesson's visibility dropdown is open
   const [openVisibilityId, setOpenVisibilityId] = useState(null);
@@ -418,22 +436,23 @@ export function MyLessonsTable({ user }) {
                         </Button>
                       </Link>
 
-                      <Link href={`/dashboard/edit-lesson/${lesson._id}`}>
-                        <Button
-                          isIconOnly
-                          size="sm"
-                          variant="light"
-                          className="text-slate-400 hover:text-[#2e7d32] hover:bg-slate-100 rounded-lg"
-                        >
-                          <Pencil size={16} />
-                        </Button>
-                      </Link>
+                      <Button
+                        isIconOnly
+                        size="sm"
+                        variant="light"
+                        onClick={() => openLessonUpdateModal(lesson)}
+                        className="text-slate-400 hover:text-[#2e7d32] hover:bg-slate-100 rounded-lg"
+                      >
+                        <Pencil size={16} />
+                      </Button>
 
                       <Button
                         isIconOnly
                         size="sm"
                         variant="light"
+                        onClick={() => openLessonDeleteModal(lesson)}
                         className="text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                        aria-label="Delete lesson"
                       >
                         <Trash2 size={16} />
                       </Button>
