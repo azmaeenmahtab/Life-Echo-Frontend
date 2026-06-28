@@ -131,6 +131,59 @@ export const getLessonsByUserId = async (userId) => {
   }
 };
 
+/**
+ * Fetches every lesson the given user has bookmarked. Optional filters:
+ *   - category       (must match an ALLOWED_CATEGORIES entry server-side)
+ *   - emotionalTone  (must match an ALLOWED_TONES entry server-side)
+ *
+ * Returns an array (empty on error) using the same shape-tolerant parsing
+ * as `getLessonsByUserId` so the table component can iterate without
+ * null-checks.
+ */
+export const getFavoriteLessonsByUserId = async (userId, filters = {}) => {
+  if (!userId) return [];
+
+  try {
+    const params = new URLSearchParams();
+    if (filters.category) params.set("category", filters.category);
+    if (filters.emotionalTone) params.set("emotionalTone", filters.emotionalTone);
+
+    const queryString = params.toString();
+    const url = `${BASE_URL}/api/lessons/user/${encodeURIComponent(
+      userId,
+    )}/favorites${queryString ? `?${queryString}` : ""}`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    });
+
+    let data = null;
+    try {
+      data = await response.json();
+    } catch {
+      // Non-JSON body; treat as empty list.
+    }
+
+    if (!response.ok) {
+      const error = new Error(
+        data?.message || "Failed to load favorite lessons",
+      );
+      error.status = response.status;
+      error.details = data;
+      throw error;
+    }
+
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.lessons)) return data.lessons;
+    return [];
+  } catch (error) {
+    console.error("getFavoriteLessonsByUserId error:", error);
+    return [];
+  }
+};
+
 export const getLessonById = async (id) => {
   try {
     const response = await fetch(`${BASE_URL}/api/lessons/${id}`, {

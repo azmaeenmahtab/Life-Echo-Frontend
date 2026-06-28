@@ -187,3 +187,34 @@ export const deleteLesson = async ({ lessonId, userId }) => {
 
   return readJson(response);
 };
+
+export const removeFavoriteLesson = async (userId, lessonId) => {
+  try {
+    const url = `${BASE_URL}/api/lessons/user/${encodeURIComponent(
+      userId,
+    )}/favorites/${encodeURIComponent(lessonId)}`;
+
+    const response = await fetch(url, {
+      method: "DELETE",
+      credentials: "include",
+    });
+
+    let data = null;
+    try {
+      data = await response.json();
+    } catch {
+      // Non-JSON body
+    }
+
+    if (!response.ok) {
+      const error = new Error(data?.message || "Failed to remove favorite");
+      error.status = response.status;
+      throw error;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("removeFavoriteLesson error:", error);
+    return false;
+  }
+};

@@ -15,18 +15,25 @@ import {
 } from "@gravity-ui/icons";
 import { Button, Drawer } from "@heroui/react"; // Removed useDisclosure from here
 import logo from "@/assets/logo-lifeecho.png";
+import { useDashboardSession } from "@/app/(dashboard-layout)/layout";
 
-const navItems = [
+const buildNavItems = (profileHref) => [
   { icon: House, label: "Home", href: "/dashboard" },
   { icon: Magnifier, label: "Add Lesson", href: "/dashboard/add-lesson" },
   { icon: Bell, label: "My Lessons", href: "/dashboard/my-lessons" },
-  { icon: Envelope, label: "Messages", href: "/dashboard/messages" },
-  { icon: Person, label: "Profile", href: "/dashboard/profile" },
-  { icon: Gear, label: "Settings", href: "/dashboard/settings" },
+  { icon: Envelope, label: "My Favorites", href: "/dashboard/my-favorites" },
+  { icon: Person, label: "Profile", href: profileHref },
+  // { icon: Gear, label: "Settings", href: "/dashboard/settings" },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { session } = useDashboardSession();
+  // Match the dynamic route app/(main-layout)/profile/[slug]/page.jsx
+  // which identifies the owner by `session.user.id`.
+  const userId = session?.user?.id;
+  const profileHref = userId ? `/profile/${userId}` : "/dashboard/profile";
+  const navItems = buildNavItems(profileHref);
   // Safe, native React fallback for managing open state
   const [isOpen, setIsOpen] = useState(false);
 
