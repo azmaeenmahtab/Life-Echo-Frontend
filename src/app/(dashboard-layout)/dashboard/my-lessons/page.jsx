@@ -1,11 +1,15 @@
-import React from 'react'
+import { MyLessonsTable } from "@/components/Dashboard/MyLessons";
+import { getUserSessionServer } from "@/lib/actions/userSession";
+import React from "react";
 
-const MyLessonsPage = () => {
+const MyLessonsPage = async () => {
+  const session = await getUserSessionServer();
+  console.log(session);
   return (
     <div>
-      <h1>My Lessons</h1>
+      <MyLessonsTable user={session?.user} />
     </div>
-  )
-}
+  );
+};
 
-export default MyLessonsPage
+export default MyLessonsPage;

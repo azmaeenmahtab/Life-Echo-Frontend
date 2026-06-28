@@ -90,6 +90,47 @@ export const getPublicLessons = async (query = {}) => {
   }
 };
 
+/**
+ * Fetches every lesson authored by the given user. Returns an array
+ * (empty on error) using the same shape-tolerant parsing as
+ * `getPublicLessons` so callers can iterate without null checks.
+ */
+export const getLessonsByUserId = async (userId) => {
+  if (!userId) return [];
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/api/lessons/user/${encodeURIComponent(userId)}`,
+      {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      },
+    );
+
+    let data = null;
+    try {
+      data = await response.json();
+    } catch {
+      // Non-JSON body; treat as empty list.
+    }
+
+    if (!response.ok) {
+      const error = new Error(data?.message || "Failed to load user lessons");
+      error.status = response.status;
+      error.details = data;
+      throw error;
+    }
+
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.lessons)) return data.lessons;
+    return [];
+  } catch (error) {
+    console.error("getLessonsByUserId error:", error);
+    return [];
+  }
+};
+
 export const getLessonById = async (id) => {
   try {
     const response = await fetch(`${BASE_URL}/api/lessons/${id}`, {

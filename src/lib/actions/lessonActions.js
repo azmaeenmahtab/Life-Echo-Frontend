@@ -32,7 +32,8 @@ async function readJson(response) {
     // Non-JSON body; leave `data` as null.
   }
   if (!response.ok) {
-    const message = data?.message || `Request failed with status ${response.status}`;
+    const message =
+      data?.message || `Request failed with status ${response.status}`;
     const error = new Error(message);
     error.status = response.status;
     error.details = data;
@@ -96,6 +97,28 @@ export const reportLesson = async ({ lessonId, userId, reason }) => {
     credentials: "include",
     body: JSON.stringify({ userId, reason }),
   });
+
+  return readJson(response);
+};
+
+export const changeLessonVisibility = async ({
+  lessonId,
+  userId,
+  visibility,
+}) => {
+  if (!lessonId)
+    throw new Error("changeLessonVisibility: lessonId is required");
+  if (!userId) throw new Error("changeLessonVisibility: userId is required");
+
+  const response = await fetch(
+    `${BASE_URL}/api/lessons/${lessonId}/visibility/change`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ userId, visibility }),
+    },
+  );
 
   return readJson(response);
 };
