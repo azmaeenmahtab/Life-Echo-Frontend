@@ -11,6 +11,8 @@
  * resolved and render the skeleton cleanly.
  */
 
+import { getAuthHeaders } from "./authHeaders";
+
 const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
 const buildUrl = (path, params = {}) => {
@@ -25,8 +27,12 @@ const buildUrl = (path, params = {}) => {
 };
 
 const getJson = async (url) => {
+  const headers = await getAuthHeaders();
   const response = await fetch(url, {
     method: "GET",
+    headers,
+    // Forward the BetterAuth session cookie on client-side calls.
+    // Server-side calls already forward it via getAuthHeaders().
     credentials: "include",
     cache: "no-store",
   });

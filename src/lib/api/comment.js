@@ -1,3 +1,5 @@
+import { getAuthHeaders } from "./authHeaders";
+
 const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
 export const PostComment = async (lessonId, userId, text) => {
@@ -16,11 +18,10 @@ export const PostComment = async (lessonId, userId, text) => {
 
   const url = `${BASE_URL}/api/comment/add?${params.toString()}`;
 
+  const headers = await getAuthHeaders();
   const response = await fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     credentials: "include",
     body: JSON.stringify({ comment: text.trim() }),
   });

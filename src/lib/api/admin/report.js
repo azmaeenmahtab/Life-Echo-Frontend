@@ -4,6 +4,9 @@
  * Mirrors the convention used by `comment.js` and `dashboard.js`:
  * - BASE_URL is read from the public env var
  * - credentials are sent so admin session cookies flow through
+ * - protected routes forward the BetterAuth session cookie via
+ *   `getAuthHeaders()` so the backend's `verifyJWT` middleware accepts
+ *   the request
  * - non-2xx responses throw with the server's `message` attached
  *
  * These endpoints are read-only and meant for the admin dashboard.
@@ -12,11 +15,15 @@
  * through.
  */
 
+import { getAuthHeaders } from "../authHeaders";
+
 const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
 const getJson = async (url) => {
+  const headers = await getAuthHeaders();
   const response = await fetch(url, {
     method: "GET",
+    headers,
     credentials: "include",
     cache: "no-store",
   });
@@ -153,10 +160,12 @@ export const ignoreLessonReports = async (lessonId) => {
     throw error;
   }
 
+  const headers = await getAuthHeaders();
   const response = await fetch(
     `${BASE_URL}/api/report/lessons/${encodeURIComponent(lessonId)}`,
     {
       method: "DELETE",
+      headers,
       credentials: "include",
       cache: "no-store",
     },
