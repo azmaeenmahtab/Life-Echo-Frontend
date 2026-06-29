@@ -214,7 +214,7 @@ export default function Navbar() {
                   </div>
 
                   <Link
-                    href="/dashboard"
+                    href={user?.role === "admin" ? "/dashboard/admin" : "/dashboard"}
                     onClick={() => setDropdownOpen(false)}
                     className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-[#2D6A4F] hover:bg-[#2D6A4F]/10 px-3 py-2.5 rounded-xl transition-all flex items-center gap-2.5 w-full"
                   >

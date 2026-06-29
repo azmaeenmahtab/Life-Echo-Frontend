@@ -148,10 +148,64 @@ export const changeLessonAccessLevel = async ({
 };
 
 /**
- * Update an existing lesson.
+ * Set the admin-moderation review status of a lesson.
  *
- * Sends PUT /api/lessons/:id with the editable fields. User identity is
- * forwarded via `userId` so the backend can enforce the owner-only check.
+ * PATCH /api/lessons/:id/review-status/change with body
+ *   { userId, status }
+ * where `status` is one of "pending" | "reviewed" | "rejected".
+ *
+ * The backend cascades on `rejected` — visibility is forced to "private"
+ * and isFeatured to false in the same update — and the response includes
+ * the post-cascade values so the admin list and the owner view can
+ * reconcile state in one round-trip.
+ *
+ * Response shape:
+ *   {
+ *     message:      "Lesson review status updated",
+ *     lessonId:     string,
+ *     userId:       string,
+ *     reviewStatus: "pending" | "reviewed" | "rejected",
+ *     visibility:   "public" | "private" | null,
+ *     isFeatured:   boolean,
+ *     changed:      boolean,
+ *   }
+ */
+export const setLessonReviewStatus = async ({ lessonId, userId, status }) => {
+  if (!lessonId)
+    throw new Error("setLessonReviewStatus: lessonId is required");
+  if (!userId)
+    throw new Error("setLessonReviewStatus: userId is required");
+  if (!status)
+    throw new Error("setLessonReviewStatus: status is required");
+
+  const response = await fetch(
+    `${BASE_URL}/api/lessons/${lessonId}/review-status/change`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ userId, status }),
+    },
+  );
+
+  return readJson(response);
+};
+
+/**
+ * PUT /api/lessons/:id with the merged lesson update payload.
+ *
+ * Caller contract (lessonUpdateModal.jsx):
+ *   updateLesson({ lessonId, userId, ...updates })
+ *     - `updates` is a flat field map (title, story, category,
+ *       emotionalTone, accessLevel, imageUrl, …) — any subset of the
+ *       lesson shape the modal is allowed to edit.
+ *     - The backend validates ownership before persisting, so we still
+ *       forward `userId` so the server can match the caller to the doc.
+ *
+ * Server response shape:
+ *   { message: "Lesson updated", lessonId: string, lesson: <updated doc> }
+ * If the server is older and doesn't return `lesson`, callers can fall
+ * back to `{ lessonId, ...updates }` — the modal already does this.
  */
 export const updateLesson = async ({ lessonId, userId, ...patch }) => {
   if (!lessonId) throw new Error("updateLesson: lessonId is required");
@@ -168,8 +222,6 @@ export const updateLesson = async ({ lessonId, userId, ...patch }) => {
 };
 
 /**
- * Delete a lesson.
- *
  * Sends DELETE /api/lessons/:id with `userId` in the body so the backend
  * can enforce owner-only deletion. Returns the server's
  * `{ message, lessonId }` payload on success.

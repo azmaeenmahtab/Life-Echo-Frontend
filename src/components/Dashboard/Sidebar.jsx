@@ -25,6 +25,26 @@ const buildNavItems = (profileHref) => [
   { icon: Person, label: "Profile", href: profileHref },
   // { icon: Gear, label: "Settings", href: "/dashboard/settings" },
 ];
+const adminNavItems = (profileHref) => [
+  { icon: House, label: "Home", href: "/dashboard/admin" },
+  {
+    icon: Magnifier,
+    label: "Mange Users",
+    href: "/dashboard/admin/manage/users",
+  },
+  {
+    icon: Bell,
+    label: "Manage Lessons",
+    href: "/dashboard/admin/manage/lessons",
+  },
+  {
+    icon: Envelope,
+    label: "Reported Lessons",
+    href: "/dashboard/admin/reported/lessons",
+  },
+  { icon: Person, label: "Profile", href: "/dashboard/admin/profile" },
+  // { icon: Gear, label: "Settings", href: "/dashboard/settings" },
+];
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -33,7 +53,11 @@ export function Sidebar() {
   // which identifies the owner by `session.user.id`.
   const userId = session?.user?.id;
   const profileHref = userId ? `/profile/${userId}` : "/dashboard/profile";
-  const navItems = buildNavItems(profileHref);
+  // Admins get the admin rail; everyone else gets the standard creator rail.
+  const isAdmin = session?.user?.role === "admin";
+  const navItems = isAdmin
+    ? adminNavItems(profileHref)
+    : buildNavItems(profileHref);
   // Safe, native React fallback for managing open state
   const [isOpen, setIsOpen] = useState(false);
 

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDown, Sprout } from "lucide-react";
 import { useDashboardSession } from "@/app/(dashboard-layout)/layout";
+import { authClient } from "@/lib/auth-client";
 
 export default function DashboardNavbar() {
   const router = useRouter();

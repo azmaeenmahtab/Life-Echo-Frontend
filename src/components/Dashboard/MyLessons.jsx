@@ -192,6 +192,9 @@ export function MyLessonsTable({ user }) {
               <th scope="col" className="px-6 py-4 font-bold">
                 Access Level
               </th>
+              <th scope="col" className="px-6 py-4 font-bold">
+                Review Status
+              </th>
               <th scope="col" className="px-6 py-4 font-bold text-right">
                 Actions
               </th>
@@ -423,7 +426,30 @@ export function MyLessonsTable({ user }) {
                       )}
                     </div>
                   </td>
-
+                  {/* 4b. Review status (read-only pill so owners see where their
+                      lesson sits in the moderation queue). */}
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex flex-col items-start gap-1">
+                      <Chip
+                        size="sm"
+                        variant="flat"
+                        className={`font-semibold text-[10px] uppercase tracking-wider rounded-full h-6 px-2.5 ${
+                          (lesson.reviewStatus || "pending") === "reviewed"
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                            : (lesson.reviewStatus || "pending") === "rejected"
+                              ? "bg-red-50 text-red-700 border border-red-200"
+                              : "bg-amber-50 text-amber-800 border border-amber-200"
+                        }`}
+                      >
+                        {lesson.reviewStatus || "pending"}
+                      </Chip>
+                      {(lesson.reviewStatus || "pending") === "rejected" && (
+                        <span className="text-[10px] text-[#556359] max-w-[10rem] leading-tight">
+                          Forced private &amp; unfeatured by admin
+                        </span>
+                      )}
+                    </div>
+                  </td>
                   {/* 5. Actions row */}
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <div className="flex items-center justify-end gap-1.5">
