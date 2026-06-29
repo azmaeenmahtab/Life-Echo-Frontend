@@ -1,18 +1,21 @@
 /**
- * Frontend API helpers for the public "community showcase" sections
- * on the home page (Top Contributors of the Week + Community
+ * Frontend API helpers for the "community showcase" sections on
+ * the home page (Top Contributors of the Week + Community
  * Favorites / Most Saved Lessons).
  *
- * Both endpoints are public — there is no auth gate today, so we
- * deliberately omit `credentials: "include"` here. They live under
- * `/api/dashboard/...` because the route is reused from the
- * dashboard router; the handlers they bind to do their own
- * clamping/sanitising of query params.
+ * Both endpoints live under `/api/dashboard/...` and are wrapped
+ * with `verifyJWT` on the backend, so each fetch must forward the
+ * BetterAuth session cookie. Because the only consumers are server
+ * components (`TopContributors.jsx`, `CommunityFavorites.jsx`), it's
+ * safe to import `getAuthHeaders()` from `next/headers` here — this
+ * file is never bundled to the client.
  *
  * Both fetchers fail-safe: a network or server error returns an
  * empty array so the server component can short-circuit ("render
  * nothing") instead of an error state.
  */
+
+import { getAuthHeaders } from "../authHeaders";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
@@ -44,10 +47,14 @@ export const getTopWeeklyContributors = async ({
       limit: String(limit),
     });
 
+    const headers = await getAuthHeaders();
+
     const response = await fetch(
       `${BASE_URL}/api/dashboard/top-weekly-contributors?${params.toString()}`,
       {
         method: "GET",
+        headers,
+        credentials: "include",
         cache: "no-store",
       },
     );
@@ -95,10 +102,14 @@ export const getTopWeeklyContributors = async ({
  */
 export const getMostSavedLessons = async ({ limit = 3 } = {}) => {
   try {
+    const headers = await getAuthHeaders();
+
     const response = await fetch(
       `${BASE_URL}/api/dashboard/most-saved-lessons?limit=${encodeURIComponent(limit)}`,
       {
         method: "GET",
+        headers,
+        credentials: "include",
         cache: "no-store",
       },
     );
