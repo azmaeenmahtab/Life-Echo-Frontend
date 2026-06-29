@@ -1,3 +1,6 @@
+import { getUserSessionServer } from "../actions/userSession";
+import { cookies } from "next/headers";
+
 const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
 /**
@@ -12,10 +15,26 @@ export const getProfileBySlug = async (slug) => {
 
   const url = `${BASE_URL}/api/profile/${encodeURIComponent(slug)}`;
 
+  const session = await getUserSessionServer();
+  console.log("session ", session);
+
   try {
+    const headers = { "Content-Type": "application/json" };
+
+    // BetterAuth stores the session in an httpOnly cookie. Read it server-side
+    // and forward it to the backend so verifyJWT can call auth.api.getSession.
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get("better-auth.session_token")?.value;
+    if (sessionCookie) {
+      headers.Cookie = `better-auth.session_token=${sessionCookie}`;
+    }
+    if (session?.user?.id) {
+      headers["x-user-id"] = session.user.id;
+    }
+
     const response = await fetch(url, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers,
       cache: "no-store",
     });
 
