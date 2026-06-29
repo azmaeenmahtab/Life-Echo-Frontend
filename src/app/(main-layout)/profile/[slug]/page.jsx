@@ -1,15 +1,18 @@
-import Link from "next/link";
-
-import { Card, Chip } from "@heroui/react";
+import { Camera, Diamond } from "lucide-react";
 
 import { getProfileBySlug } from "@/lib/api/profile";
 import { getUserSessionServer } from "@/lib/actions/userSession";
+import ProfileLessons from "@/components/Dashboard/ProfileLessons";
+import EditProfileButton from "@/components/Dashboard/EditProfileButton";
 
 const ProfilePage = async ({ params }) => {
   const { slug } = await params;
 
   const session = await getUserSessionServer();
-  const isOwner = session?.user?.id === slug;
+  const sessionUserId = session?.user?.id ?? null;
+  const isOwner =
+    Boolean(sessionUserId) &&
+    (sessionUserId === slug || sessionUserId?.toString() === slug?.toString());
 
   let profile = null;
   let loadError = null;
@@ -41,177 +44,94 @@ const ProfilePage = async ({ params }) => {
     );
   }
 
-  const { user, lessons, totals } = profile;
+  const { user, totals } = profile;
+  const isPremium =
+    user?.plan === "premium" || user?.plan === "pro" || user?.plan === "Pro";
 
   return (
     <main className="min-h-screen bg-[#faf7f2] px-6 py-30 font-sans selection:bg-[#dfd3c3]">
       <div className="max-w-5xl mx-auto space-y-6">
-        {/* Header */}
-        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#2e7d32] mb-3">
-              Profile
-            </p>
-            <h1 className="text-4xl font-serif font-bold leading-tight text-[#1c2833]">
-              {user?.name || slug}
-            </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              {user?.bio || user?.authorTitle || "Member of Life Echo"}
-            </p>
-          </div>
-
-          {isOwner && (
-            <Link
-              href="/dashboard/add-lesson"
-              className="inline-flex items-center justify-center px-4 h-10 rounded-xl bg-[#1c2833] text-white text-sm font-medium hover:bg-[#2e7d32] transition-all"
-            >
-              + Add lesson
-            </Link>
-          )}
-        </header>
-
-        {/* User info card */}
-        <Card className="p-6 bg-white border border-[#eae6df] shadow-sm rounded-2xl">
-          <div className="flex flex-col sm:flex-row gap-6 sm:items-center">
-            <div className="w-20 h-20 rounded-full bg-[#e2f2e9] text-[#2e7d32] flex items-center justify-center font-serif font-bold text-2xl border border-[#eae6df] overflow-hidden shrink-0">
-              {user?.image ? (
-                <img
-                  src={user.image}
-                  alt={user?.name || "Profile"}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                (user?.name || slug || "?").charAt(0).toUpperCase()
+        {/* Header card */}
+        <header className="bg-white border border-[#eae6df] rounded-3xl p-6 sm:p-8 shadow-sm">
+          <div className="flex flex-col lg:flex-row gap-8 lg:items-center">
+            {/* Avatar with optional upload overlay */}
+            <div className="relative shrink-0 self-start">
+              <div className="w-32 h-40 sm:w-36 sm:h-44 rounded-full bg-[#1c2f24] text-[#e2f2e9] flex items-center justify-center font-serif font-bold text-5xl border-4 border-white shadow-md overflow-hidden">
+                {user?.image ? (
+                  <img
+                    src={user.image}
+                    alt={user?.name || "Profile"}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  (user?.name || slug || "?").charAt(0).toUpperCase()
+                )}
+              </div>
+              {isOwner && (
+                <button
+                  type="button"
+                  aria-label="Change photo"
+                  className="absolute -bottom-1 -right-1 w-9 h-9 rounded-full bg-white border-2 border-[#eae6df] shadow-md flex items-center justify-center text-[#2e7d32] hover:bg-[#e2f2e9] transition"
+                >
+                  <Camera size={16} />
+                </button>
               )}
             </div>
 
-            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-              <Field label="Name" value={user?.name || "N/A"} />
-              <Field label="Email" value={user?.email || "N/A"} />
-              <Field label="Plan" value={user?.plan || "free"} />
-              <Field label="Author Title" value={user?.authorTitle || "N/A"} />
-              <Field
-                label="Lessons on profile"
-                value={user?.lessonsCount ?? "N/A"}
-              />
-              <Field label="Students" value={user?.studentsCount ?? "N/A"} />
+            {/* Name, badges, email */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 flex-wrap">
+                <h1 className="text-3xl sm:text-4xl font-serif font-bold leading-tight text-[#1c2833]">
+                  {user?.name || slug}
+                </h1>
+                {isOwner && <EditProfileButton user={user} />}
+                {isPremium && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#f5e9d4] text-[#a17236] text-[10px] font-bold uppercase tracking-wider border border-[#e8d6b4]">
+                    <Diamond size={11} />
+                    Premium
+                  </span>
+                )}
+              </div>
+
+              {/* Email — visible to owner, hidden to others */}
+              <p className="font-serif italic text-[15px] text-[#1c2833]/70 mt-3 break-all">
+                {isOwner ? user?.email || "N/A" : ""}
+              </p>
+
+              {(user?.bio || user?.authorTitle) && (
+                <p className="text-sm text-slate-500 mt-1">
+                  {user?.bio || user?.authorTitle}
+                </p>
+              )}
+            </div>
+
+            {/* Stats */}
+            <div className="flex gap-8 shrink-0 lg:border-l lg:border-[#eae6df] lg:pl-8 pt-6 lg:pt-0 border-t lg:border-t-0 border-[#eae6df]">
+              <div>
+                <p className="text-3xl font-serif font-bold text-[#2e7d32]">
+                  {totals?.totalLessons ?? 0}
+                </p>
+                <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mt-1">
+                  Lessons Created
+                </p>
+              </div>
+              <div>
+                <p className="text-3xl font-serif font-bold text-[#2e7d32]">
+                  {totals?.totalSaves ?? 0}
+                </p>
+                <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mt-1">
+                  Lessons Saved
+                </p>
+              </div>
             </div>
           </div>
-        </Card>
+        </header>
 
-        {/* Totals row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <Stat label="Lessons" value={totals?.totalLessons ?? 0} />
-          <Stat label="Saves" value={totals?.totalSaves ?? 0} />
-          <Stat label="Likes" value={totals?.totalLikes ?? 0} />
-          <Stat label="Views" value={totals?.totalViews ?? 0} />
-        </div>
-
-        {/* Lessons list */}
-        <Card className="p-6 bg-white border border-[#eae6df] shadow-sm rounded-2xl">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-serif font-bold text-lg text-[#1c2833]">
-              Lessons ({lessons.length})
-            </h2>
-            {isOwner && (
-              <Link
-                href="/dashboard/my-lessons"
-                className="text-xs font-semibold text-[#2e7d32] hover:underline"
-              >
-                Manage lessons →
-              </Link>
-            )}
-          </div>
-
-          {lessons.length === 0 ? (
-            <p className="text-sm text-slate-500">No lessons yet.</p>
-          ) : (
-            <ul className="divide-y divide-[#eae6df]">
-              {lessons.map((lesson) => (
-                <li
-                  key={lesson._id}
-                  className="py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
-                >
-                  <div className="min-w-0">
-                    <Link
-                      href={`/lessons/details/${lesson._id}`}
-                      className="font-semibold text-[#1c2833] hover:text-[#2e7d32] block truncate"
-                    >
-                      {lesson.title || "Untitled lesson"}
-                    </Link>
-                    <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-                      {lesson.story}
-                    </p>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {lesson.category && (
-                        <Chip
-                          size="sm"
-                          className="bg-[#e2f2e9] text-[#2e7d32] uppercase text-[10px] tracking-wider rounded-md"
-                        >
-                          {lesson.category}
-                        </Chip>
-                      )}
-                      {lesson.emotionalTone && (
-                        <Chip
-                          size="sm"
-                          className="bg-[#fef3d6] text-[#b27b00] uppercase text-[10px] tracking-wider rounded-md"
-                        >
-                          {lesson.emotionalTone}
-                        </Chip>
-                      )}
-                      {lesson.accessLevel && (
-                        <Chip
-                          size="sm"
-                          variant="flat"
-                          className="uppercase text-[10px] tracking-wider rounded-md"
-                        >
-                          {lesson.accessLevel}
-                        </Chip>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4 text-xs text-slate-500 shrink-0">
-                    <span>♥ {lesson.likesCount ?? 0}</span>
-                    <span>★ {lesson.savesCount ?? 0}</span>
-                    <span>👁 {lesson.viewsCount ?? 0}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
+        {/* Filterable lessons grid (mirrors public lessons design) */}
+        <ProfileLessons userId={slug} totalCount={totals?.totalLessons ?? 0} />
       </div>
     </main>
   );
 };
-
-/* ----------------- Local helpers ----------------- */
-
-function Field({ label, value }) {
-  return (
-    <div>
-      <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">
-        {label}
-      </p>
-      <p className="font-semibold text-[#334155] break-words">
-        {value === null || value === undefined || value === "" ? "N/A" : value}
-      </p>
-    </div>
-  );
-}
-
-function Stat({ label, value }) {
-  return (
-    <div className="p-4 bg-white border border-[#eae6df] rounded-2xl shadow-sm">
-      <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">
-        {label}
-      </p>
-      <p className="font-bold text-[#1c2833] text-2xl mt-1">
-        {value === null || value === undefined ? "N/A" : value}
-      </p>
-    </div>
-  );
-}
 
 export default ProfilePage;

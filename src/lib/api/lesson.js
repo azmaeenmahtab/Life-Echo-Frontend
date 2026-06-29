@@ -94,19 +94,33 @@ export const getPublicLessons = async (query = {}) => {
  * Fetches every lesson authored by the given user. Returns an array
  * (empty on error) using the same shape-tolerant parsing as
  * `getPublicLessons` so callers can iterate without null checks.
+ *
+ * Optional `query` mirrors the public-list filter shape:
+ *   - category   single value, must match a server-allowed slug
+ *   - tone       single value, must match a server-allowed tone
+ *   - keywords   case-insensitive partial match across title + story
+ *   - sortby     "newest" (default) | "mostsaved"
  */
-export const getLessonsByUserId = async (userId) => {
+export const getLessonsByUserId = async (userId, query = {}) => {
   if (!userId) return [];
 
   try {
-    const response = await fetch(
-      `${BASE_URL}/api/lessons/user/${encodeURIComponent(userId)}`,
-      {
-        method: "GET",
-        credentials: "include",
-        cache: "no-store",
-      },
-    );
+    const params = new URLSearchParams();
+    if (query.category) params.set("category", query.category);
+    if (query.tone) params.set("tone", query.tone);
+    if (query.keywords) params.set("keywords", query.keywords);
+    if (query.sortby) params.set("sortby", query.sortby);
+
+    const queryString = params.toString();
+    const url = `${BASE_URL}/api/lessons/user/${encodeURIComponent(userId)}${
+      queryString ? `?${queryString}` : ""
+    }`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    });
 
     let data = null;
     try {

@@ -5,8 +5,8 @@ import { Poppins, Roboto_Slab } from "next/font/google";
 import "./globals.css";
 import { ReportModalContextProvider } from "@/lib/contexts/reportModalContext";
 import ReportModal from "@/components/Modals/reportModal";
-
-// Load Poppins for overall UI readability
+import { EditProfileModalContextProvider } from "@/lib/contexts/editProfileModalContext";
+import EditProfileModal from "@/components/Modals/editProfileModal";
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
@@ -33,8 +33,13 @@ export default function RootLayout({ children }) {
     >
       {/* font-poppins added here applies it universally so you don't need it everywhere */}
       <body className="min-h-full flex flex-col bg-[#FAF8F5] font-poppins text-gray-700">
-           {children}
-           
+      <ReportModalContextProvider>
+        <EditProfileModalContextProvider>
+          {children}
+          <ReportModal />
+          <EditProfileModal />
+        </EditProfileModalContextProvider>
+      </ReportModalContextProvider>
       </body>
     </html>
   );

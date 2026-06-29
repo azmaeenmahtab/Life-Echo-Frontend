@@ -54,7 +54,9 @@ export function MyLessonsTable({ user }) {
   useEffect(() => {
     if (!updatedLesson?._id) return;
     setLessons((prev) =>
-      prev.map((l) => (l._id === updatedLesson._id ? { ...l, ...updatedLesson } : l)),
+      prev.map((l) =>
+        l._id === updatedLesson._id ? { ...l, ...updatedLesson } : l,
+      ),
     );
   }, [updatedLesson]);
 
@@ -432,7 +434,9 @@ export function MyLessonsTable({ user }) {
                           variant="light"
                           className="text-slate-400 hover:text-[#1E2E24] hover:bg-slate-100 rounded-lg"
                         >
-                          <ExternalLink size={16} />
+                          <div className="pt-1">
+                            <ExternalLink size={16} className="" />
+                          </div>
                         </Button>
                       </Link>
 
