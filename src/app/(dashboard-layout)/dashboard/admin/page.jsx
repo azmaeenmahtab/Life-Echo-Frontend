@@ -9,6 +9,10 @@ import { getReportedLessonsCount } from "@/lib/api/admin/report";
 import { getPublicLessons, getTodaysLessons } from "@/lib/api/lesson";
 import React from "react";
 
+// Every dashboard call below uses `cache: "no-store"`, so the page
+// must opt out of static prerendering or the Vercel build fails.
+export const dynamic = "force-dynamic";
+
 const AdminDashboardPage = async () => {
   const data = await getAllUsers();
   const lessons = await getPublicLessons();

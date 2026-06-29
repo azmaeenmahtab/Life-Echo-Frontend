@@ -2,6 +2,10 @@ import LessonsList from "@/components/Admin/LessonsList";
 import { getPublicLessons } from "@/lib/api/lesson";
 import React from "react";
 
+// `getPublicLessons` uses `cache: "no-store"`, so this admin page
+// must opt out of static prerendering.
+export const dynamic = "force-dynamic";
+
 const ManageLessonsPage = async () => {
   const lessons = await getPublicLessons();
   const total = Array.isArray(lessons) ? lessons.length : 0;

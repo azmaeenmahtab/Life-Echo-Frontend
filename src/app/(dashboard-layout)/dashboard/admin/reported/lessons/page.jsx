@@ -3,6 +3,11 @@ import ReportedLessonsStats from "@/components/Admin/ReportedLessonsStats";
 import { getReportedLessons } from "@/lib/api/admin/report";
 import React from "react";
 
+// Force dynamic rendering: `getReportedLessons` calls the backend with
+// `cache: "no-store"`, and the page depends on the current admin
+// session, so it must run at request time, not at build time.
+export const dynamic = "force-dynamic";
+
 /**
  * Admin page that lists reported lessons grouped by lesson.
  *
