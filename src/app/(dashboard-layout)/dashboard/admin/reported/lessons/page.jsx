@@ -1,9 +1,19 @@
 import ReportedLessonsList from "@/components/Admin/ReportedLessonsList";
-import { getAllReports } from "@/lib/api/admin/report";
+import ReportedLessonsStats from "@/components/Admin/ReportedLessonsStats";
+import { getReportedLessons } from "@/lib/api/admin/report";
 import React from "react";
 
+/**
+ * Admin page that lists reported lessons grouped by lesson.
+ *
+ * The fetch is grouped server-side (one row per lesson with its
+ * report count + a snapshot of recent reasons). The detailed "View
+ * reasons" modal then calls `getLessonReports(lessonId)` on demand
+ * so the table query stays cheap and doesn't materialise every
+ * report row up-front.
+ */
 const ReportedLessonsPage = async () => {
-  const { total, reports } = await getAllReports();
+  const { total, totalReports, lessons } = await getReportedLessons();
 
   return (
     <div className="space-y-6">
@@ -11,12 +21,14 @@ const ReportedLessonsPage = async () => {
         <h1 className="text-3xl font-serif font-bold text-[#1E2E24]">
           Reported Lessons
         </h1>
-        <p className="text-sm text-[#707E74] mt-1">
-          {total} report{total === 1 ? "" : "s"} total
-        </p>
       </header>
 
-      <ReportedLessonsList reports={reports} />
+      <ReportedLessonsStats
+        reportedLessons={total}
+        totalReports={totalReports}
+      />
+
+      <ReportedLessonsList lessons={lessons} />
     </div>
   );
 };

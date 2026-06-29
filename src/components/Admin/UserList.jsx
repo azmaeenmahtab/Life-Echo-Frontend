@@ -1,6 +1,7 @@
 import React from "react";
+import RoleSelector from "./RoleSelector";
 
-const UserList = async ({ users }) => {
+const UserList = async ({ users, currentUserId }) => {
   const list = Array.isArray(users) ? users : [];
 
   if (list.length === 0) {
@@ -73,16 +74,15 @@ const UserList = async ({ users }) => {
 
                   {/* Role */}
                   <td className="px-5 py-3">
-                    <span
-                      className={
-                        "inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border " +
-                        (isAdmin
-                          ? "bg-[#f5e9d4] text-[#a17236] border-[#e8d6b4]"
-                          : "bg-[#e2f2e9] text-[#2e7d32] border-[#cfe5d3]")
-                      }
-                    >
-                      {user.role || "user"}
-                    </span>
+                    <RoleSelector
+                      userId={user.id ?? user._id}
+                      role={user.role || "user"}
+                      isSelf={Boolean(
+                        currentUserId &&
+                          (user.id === currentUserId ||
+                            user._id === currentUserId)
+                      )}
+                    />
                   </td>
 
                   {/* Plan */}

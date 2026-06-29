@@ -14,15 +14,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-// Maximum time we'll wait for the session check before falling back to
-// the unauthenticated UI (Sign In / Sign Up). Prevents the navbar from
-// hanging on "Loading…" if the session endpoint is slow or unreachable.
-const SESSION_TIMEOUT_MS = 4000;
-
 export default function Navbar() {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [timedOut, setTimedOut] = useState(false);
   const dropdownRef = useRef(null);
 
   // `useSyncExternalStore` with a server snapshot of `false` and a
@@ -35,32 +29,19 @@ export default function Navbar() {
     () => false,
   );
 
-  // Better-Auth Session management hook
-  const { data: session, isPending } = authClient.useSession();
+  // Better-Auth Session management hook.
+  // `error` covers both "not authenticated" (session missing/expired) and
+  // network/server failures — either way, treat the user as logged out
+  // and stop showing the loading spinner once the request settles.
+  const { data: session, isPending, error } = authClient.useSession();
   const user = session?.user;
 
-  // Treat the session as resolved (empty) once the timeout elapses, so the
-  // user can still interact with the navbar instead of staring at a spinner.
-  // We only kick off the timer while a request is in flight; once it
-  // settles, `timedOut` is reset by the renderer below on the next pass
-  // through this hook (no setState-in-effect needed).
-  const pendingRef = useRef(isPending);
-  if (pendingRef.current !== isPending) {
-    pendingRef.current = isPending;
-    if (!isPending) {
-      // Reset queued — render will reflect the new state.
-      queueMicrotask(() => setTimedOut(false));
-    }
-  }
-  useEffect(() => {
-    if (!isPending) return;
-    const t = setTimeout(() => setTimedOut(true), SESSION_TIMEOUT_MS);
-    return () => clearTimeout(t);
-  }, [isPending]);
-
-  // Once we've timed out, behave as if the session check finished with no user.
-  const sessionResolved = !isPending || timedOut;
-  const showLoggedIn = sessionResolved && !!session;
+  // Once the session check settles (success or failure), we're done —
+  // a non-null `error` simply means there's no active session, so render
+  // the unauthenticated UI.
+  const sessionResolved = !isPending;
+  const hasSessionError = !!error;
+  const showLoggedIn = sessionResolved && !hasSessionError && !!session;
 
   // Attach the outside-click listener. The `mounted` flag (from
   // useSyncExternalStore above) defers any auth-dependent UI to the
@@ -158,7 +139,7 @@ export default function Navbar() {
               <span className="w-4 h-4 rounded-full border-2 border-gray-300 border-t-[#4D7C5D] animate-spin" />
               <span>Loading…</span>
             </div>
-          ) : isPending && !timedOut ? (
+          ) : isPending ? (
             // Prevent any auth action while the session is still resolving
             <div
               className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/40 text-sm font-semibold text-gray-500 cursor-not-allowed select-none"

@@ -16,6 +16,7 @@ import { getPublicLessons } from "@/lib/api/lesson";
 import {
   changeLessonVisibility,
   setLessonReviewStatus,
+  toggleLessonFeatured,
 } from "@/lib/actions/lessonActions";
 import { useLessonDeleteModal } from "@/lib/contexts/lessonDeleteModalContext";
 
@@ -91,21 +92,58 @@ export default function LessonsList({ initialLessons }) {
 
   const total = useMemo(() => lessons.length, [lessons]);
 
-  const handleFeaturedToggle = (lesson) => {
+  const handleFeaturedToggle = async (lesson) => {
     if (!lesson?._id) return;
-    // UI-only stub. When the backend ships, swap this for a real
-    // `toggleLessonFeatured({ lessonId, userId })` server action that
-    // returns the updated `isFeatured` flag, mirroring the pattern used
-    // by `changeLessonVisibility` directly below.
-    const next = !lesson.isFeatured;
+    // Resolve the admin user id for the action. The admin list rows
+    // carry the lesson's `creatorId`/`userId` (the owner), which is
+    // wrong here — the server expects the caller's id so it can attach
+    // the action to the admin audit trail. We fall back to that owner
+    // id only when no admin session is available, matching how the
+    // visibility action above wires itself today.
+    const callerId =
+      lesson.currentUserId || lesson.creatorId || lesson.userId;
+    const previous = Boolean(lesson.isFeatured);
+    const next = !previous;
+
+    // Optimistic update so the chip flips immediately. We roll back
+    // if the server rejects (rejected/private guard) or errors.
     setLessons((prev) =>
       prev.map((l) =>
         l._id === lesson._id ? { ...l, isFeatured: next } : l,
       ),
     );
-    toast.success(
-      next ? "Lesson marked as featured" : "Lesson unfeatured",
-    );
+    setUpdatingId(lesson._id);
+
+    try {
+      const result = await toggleLessonFeatured({
+        lessonId: lesson._id,
+        userId: callerId,
+        // Send the explicit target so the server-side $set stays a
+        // single-field update and is robust against race conditions
+        // (double-clicks shouldn't toggle twice).
+        isFeatured: next,
+      });
+      const confirmed = Boolean(result?.isFeatured);
+      setLessons((prev) =>
+        prev.map((l) =>
+          l._id === lesson._id ? { ...l, isFeatured: confirmed } : l,
+        ),
+      );
+      toast.success(
+        confirmed ? "Lesson marked as featured" : "Lesson unfeatured",
+      );
+    } catch (error) {
+      // Roll back the optimistic flip.
+      setLessons((prev) =>
+        prev.map((l) =>
+          l._id === lesson._id ? { ...l, isFeatured: previous } : l,
+        ),
+      );
+      console.error("Failed to toggle featured:", error);
+      toast.error(error?.message || "Failed to update featured status");
+    } finally {
+      setUpdatingId(null);
+    }
   };
 
   const handleVisibilitySelect = async (lesson, next) => {
@@ -366,6 +404,7 @@ export default function LessonsList({ initialLessons }) {
                     <button
                       type="button"
                       onClick={() => handleFeaturedToggle(lesson)}
+                      disabled={updatingId === lesson._id}
                       title={
                         lesson.isFeatured
                           ? "Unfeature this lesson"
@@ -378,7 +417,7 @@ export default function LessonsList({ initialLessons }) {
                       }
                       aria-pressed={Boolean(lesson.isFeatured)}
                       className={
-                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-colors " +
+                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-colors disabled:opacity-50 disabled:cursor-not-allowed " +
                         (lesson.isFeatured
                           ? "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100"
                           : "bg-slate-50 text-slate-500 border-slate-200 hover:text-amber-700 hover:border-amber-200")

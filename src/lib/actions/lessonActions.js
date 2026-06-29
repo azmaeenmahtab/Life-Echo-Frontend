@@ -192,6 +192,46 @@ export const setLessonReviewStatus = async ({ lessonId, userId, status }) => {
 };
 
 /**
+ * Toggle the `isFeatured` flag on a lesson (admin moderation).
+ *
+ * PATCH /api/lessons/:id/featured/toggle with body
+ *   { userId, isFeatured? }
+ *
+ * `isFeatured` is optional — when omitted the backend flips the current
+ * value (true toggle). Pass an explicit boolean to force a state.
+ *
+ * The backend enforces two guardrails and returns 409 when violated:
+ *   - a lesson with `reviewStatus === "rejected"` cannot be featured
+ *   - a `private` lesson cannot be featured
+ *
+ * Response shape:
+ *   {
+ *     message:    "Lesson featured successfully" | "Lesson unfeatured successfully",
+ *     lessonId:   string,
+ *     isFeatured: boolean,   // post-toggle
+ *     changed:    boolean,
+ *   }
+ */
+export const toggleLessonFeatured = async ({ lessonId, userId, isFeatured }) => {
+  if (!lessonId)
+    throw new Error("toggleLessonFeatured: lessonId is required");
+  if (!userId)
+    throw new Error("toggleLessonFeatured: userId is required");
+
+  const response = await fetch(
+    `${BASE_URL}/api/lessons/${lessonId}/featured/toggle`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ userId, isFeatured }),
+    },
+  );
+
+  return readJson(response);
+};
+
+/**
  * PUT /api/lessons/:id with the merged lesson update payload.
  *
  * Caller contract (lessonUpdateModal.jsx):

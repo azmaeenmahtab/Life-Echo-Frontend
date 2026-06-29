@@ -76,3 +76,107 @@ export const getReportedLessonsCount = async () => {
     return 0;
   }
 };
+
+/**
+ * Returns the grouped report payload: one row per lesson that has at
+ * least one report, plus the total report count across those lessons.
+ *
+ * Shape: `{ total: number, lessons: GroupedLessonRow[] }`. Empty
+ * defaults on failure so the table can render its "no reports" state.
+ *
+ * `GroupedLessonRow` matches the backend aggregation in
+ * `backend/services/report.service.js#getReportedLessonsGrouped`:
+ *   {
+ *     lessonId:          string,
+ *     lessonTitle:       string | null,
+ *     lessonImage:       string | null,
+ *     lessonCategory:    string | null,
+ *     lessonAccessLevel: string | null,
+ *     reportCount:       number,
+ *     lastSubmittedAt:   ISOString | null,
+ *     recentReasons:     string[],
+ *   }
+ */
+export const getReportedLessons = async () => {
+  try {
+    const data = await getJson(`${BASE_URL}/api/report/lessons`);
+    const lessons = Array.isArray(data?.lessons) ? data.lessons : [];
+    const totalReports = lessons.reduce(
+      (sum, row) => sum + Number(row?.reportCount ?? 0),
+      0,
+    );
+    return {
+      total: Number(data?.total ?? lessons.length),
+      totalReports,
+      lessons,
+    };
+  } catch (error) {
+    console.error("getReportedLessons error:", error);
+    return { total: 0, totalReports: 0, lessons: [] };
+  }
+};
+
+/**
+ * Fetches every report filed against a single lesson — drives the
+ * "View reasons" modal in the admin reported-lessons table. The
+ * modal calls this on demand so the table query stays cheap.
+ *
+ * Shape: `{ total: number, reports: ReportRow[] }`.
+ */
+export const getLessonReports = async (lessonId) => {
+  if (!lessonId) {
+    return { total: 0, reports: [] };
+  }
+  try {
+    const data = await getJson(
+      `${BASE_URL}/api/report/lessons/${encodeURIComponent(lessonId)}`,
+    );
+    const reports = Array.isArray(data?.reports) ? data.reports : [];
+    return { total: Number(data?.total ?? reports.length), reports };
+  } catch (error) {
+    console.error("getLessonReports error:", error);
+    return { total: 0, reports: [] };
+  }
+};
+
+/**
+ * Drops every report filed against `lessonId` (the "Ignore" admin
+ * action). The lesson itself stays live.
+ *
+ * Resolves to the server payload `{ message, lessonId, deletedCount }`
+ * on success or an error (caller decides how to handle the toast).
+ */
+export const ignoreLessonReports = async (lessonId) => {
+  if (!lessonId) {
+    const error = new Error("lessonId is required");
+    error.status = 400;
+    throw error;
+  }
+
+  const response = await fetch(
+    `${BASE_URL}/api/report/lessons/${encodeURIComponent(lessonId)}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+      cache: "no-store",
+    },
+  );
+
+  let data = null;
+  try {
+    data = await response.json();
+  } catch {
+    // Non-JSON body, fall through to the generic error below.
+  }
+
+  if (!response.ok) {
+    const error = new Error(
+      data?.message || `Request failed (${response.status})`,
+    );
+    error.status = response.status;
+    error.details = data;
+    throw error;
+  }
+
+  return data;
+};

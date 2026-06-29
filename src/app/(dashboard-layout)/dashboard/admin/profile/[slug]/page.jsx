@@ -48,7 +48,7 @@ const AdminProfilePage = async ({ params }) => {
   const isAdmin = user?.role === "admin";
 
   return (
-    <main className="min-h-screen bg-[#faf7f2] px-6 py-30 font-sans selection:bg-[#dfd3c3]">
+    <main className="min-h-screen bg-[#faf7f2] px-6 py-6 font-sans selection:bg-[#dfd3c3]">
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Header card */}
         <header className="bg-white border border-[#eae6df] rounded-3xl p-6 sm:p-8 shadow-sm">
