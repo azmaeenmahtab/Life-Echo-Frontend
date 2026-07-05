@@ -27,7 +27,7 @@ export default async function Featured() {
       <div className="text-center mb-12">
         <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E8EFE6] text-[#2C5E3B] text-xs font-bold uppercase tracking-widest font-sans mb-4">
           <Sparkles size={14} strokeWidth={2} />
-          Editor's Picks
+          Editor&apos;s Picks
         </span>
         <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#2C5E3B] mb-3">
           Featured Lessons

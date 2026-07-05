@@ -15,9 +15,11 @@
  * nothing") instead of an error state.
  */
 
-import { getAuthHeaders } from "../authHeaders";
-
+import { getJWTTokenServer } from "@/lib/jwt/jwtServer";
+// import { getJWTClient } from "@/lib/jwt/jwt";
 const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL;
+
+
 
 /**
  * Fetches the users who authored the most lessons in the last
@@ -46,14 +48,19 @@ export const getTopWeeklyContributors = async ({
       days: String(days),
       limit: String(limit),
     });
-
-    const headers = await getAuthHeaders();
-
+    const token = await getJWTTokenServer();
+    if (!token) {
+      throw new Error("No JWT token available for protected request");
+    }
+ 
     const response = await fetch(
       `${BASE_URL}/api/dashboard/top-weekly-contributors?${params.toString()}`,
       {
         method: "GET",
-        headers,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         credentials: "include",
         cache: "no-store",
       },
@@ -102,13 +109,19 @@ export const getTopWeeklyContributors = async ({
  */
 export const getMostSavedLessons = async ({ limit = 3 } = {}) => {
   try {
-    const headers = await getAuthHeaders();
-
+    const token = await getJWTTokenServer();
+    if (!token) {
+      throw new Error("No JWT token available for protected request");
+    }
+ 
     const response = await fetch(
       `${BASE_URL}/api/dashboard/most-saved-lessons?limit=${encodeURIComponent(limit)}`,
       {
         method: "GET",
-        headers,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         credentials: "include",
         cache: "no-store",
       },

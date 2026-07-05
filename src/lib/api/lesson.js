@@ -6,7 +6,6 @@
  * `message` attached for easier toasting in the UI.
  */
 
-import { getAuthHeaders } from "./authHeaders";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
@@ -19,10 +18,8 @@ const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL;
  * response is not ok.
  */
 export const createLesson = async (payload) => {
-  const headers = await getAuthHeaders();
   const response = await fetch(`${BASE_URL}/api/lessons/create`, {
     method: "POST",
-    headers,
     body: JSON.stringify(payload),
     credentials: "include",
   });
@@ -58,9 +55,8 @@ export const getPublicLessons = async (query = {}) => {
     if (query.sortby) params.set("sortby", query.sortby);
 
     const queryString = params.toString();
-    const url = `${BASE_URL}/api/lessons/public${
-      queryString ? `?${queryString}` : ""
-    }`;
+    const url = `${BASE_URL}/api/lessons/public${queryString ? `?${queryString}` : ""
+      }`;
 
     const response = await fetch(url, {
       method: "GET",
@@ -113,14 +109,11 @@ export const getLessonsByUserId = async (userId, query = {}) => {
     if (query.sortby) params.set("sortby", query.sortby);
 
     const queryString = params.toString();
-    const url = `${BASE_URL}/api/lessons/user/${encodeURIComponent(userId)}${
-      queryString ? `?${queryString}` : ""
-    }`;
+    const url = `${BASE_URL}/api/lessons/user/${encodeURIComponent(userId)}${queryString ? `?${queryString}` : ""
+      }`;
 
-    const headers = await getAuthHeaders();
     const response = await fetch(url, {
       method: "GET",
-      headers,
       credentials: "include",
       cache: "no-store",
     });
@@ -158,12 +151,10 @@ export const getLessonsByUserId = async (userId, query = {}) => {
  */
 export const getTodaysLessons = async ({ limit = 5 } = {}) => {
   try {
-    const headers = await getAuthHeaders();
     const response = await fetch(
       `${BASE_URL}/api/dashboard/today-lessons?limit=${encodeURIComponent(limit)}`,
       {
         method: "GET",
-        headers,
         credentials: "include",
         cache: "no-store",
       },
@@ -205,12 +196,10 @@ export const getTodaysLessons = async ({ limit = 5 } = {}) => {
  */
 export const getLessonGrowth = async ({ days = 30 } = {}) => {
   try {
-    const headers = await getAuthHeaders();
     const response = await fetch(
       `${BASE_URL}/api/dashboard/lesson-growth?days=${encodeURIComponent(days)}`,
       {
         method: "GET",
-        headers,
         credentials: "include",
         cache: "no-store",
       },
@@ -267,10 +256,8 @@ export const getFavoriteLessonsByUserId = async (userId, filters = {}) => {
       userId,
     )}/favorites${queryString ? `?${queryString}` : ""}`;
 
-    const headers = await getAuthHeaders();
     const response = await fetch(url, {
       method: "GET",
-      headers,
       credentials: "include",
       cache: "no-store",
     });
@@ -301,11 +288,9 @@ export const getFavoriteLessonsByUserId = async (userId, filters = {}) => {
 };
 
 export const getLessonById = async (id) => {
-  const headers = await getAuthHeaders();
   try {
     const response = await fetch(`${BASE_URL}/api/lessons/${id}`, {
       method: "GET",
-      headers,
       credentials: "include",
       cache: "no-store",
     });
@@ -345,12 +330,13 @@ export const getFeaturedLessons = async ({ limit } = {}) => {
     params.set("sortby", "newest");
     if (limit) params.set("limit", String(limit));
 
-    const headers = await getAuthHeaders();
     const response = await fetch(
       `${BASE_URL}/api/lessons/public?${params.toString()}`,
       {
         method: "GET",
-        headers,
+        headers: {
+          "Content-Type": "application/json",
+        },
         credentials: "include",
         cache: "no-store",
       },

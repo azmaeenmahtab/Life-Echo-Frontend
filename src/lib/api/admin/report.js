@@ -15,16 +15,13 @@
  * through.
  */
 
-import { getAuthHeaders } from "../authHeaders";
-
+ 
 const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
 const getJson = async (url) => {
-  const headers = await getAuthHeaders();
-  const response = await fetch(url, {
+   const response = await fetch(url, {
     method: "GET",
-    headers,
-    credentials: "include",
+     credentials: "include",
     cache: "no-store",
   });
 
@@ -160,13 +157,11 @@ export const ignoreLessonReports = async (lessonId) => {
     throw error;
   }
 
-  const headers = await getAuthHeaders();
-  const response = await fetch(
+   const response = await fetch(
     `${BASE_URL}/api/report/lessons/${encodeURIComponent(lessonId)}`,
     {
       method: "DELETE",
-      headers,
-      credentials: "include",
+       credentials: "include",
       cache: "no-store",
     },
   );
