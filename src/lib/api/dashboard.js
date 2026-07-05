@@ -11,6 +11,8 @@
  * resolved and render the skeleton cleanly.
  */
 
+import { getJWTTokenServer } from "../jwt/jwtServer";
+
  
 const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
@@ -26,9 +28,16 @@ const buildUrl = (path, params = {}) => {
 };
 
 const getJson = async (url) => {
+    const token = await getJWTTokenServer();
+    if (!token) {
+      throw new Error("No JWT token available for protected request");
+    }
    const response = await fetch(url, {
     method: "GET",
-
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
     credentials: "include",
     cache: "no-store",
   });
