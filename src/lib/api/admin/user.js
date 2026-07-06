@@ -1,6 +1,8 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
+import { getAuthedHeaders } from "../authed";
+
 const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
 export const getAllUsers = async () => {
@@ -39,6 +41,7 @@ export const getTopContributors = async ({ limit = 5 } = {}) => {
       `${BASE_URL}/api/dashboard/top-contributors?limit=${encodeURIComponent(limit)}`,
       {
         method: "GET",
+        headers: await getAuthedHeaders(),
         credentials: "include",
         cache: "no-store",
       },
@@ -93,6 +96,7 @@ export const getUserGrowth = async ({ days = 30 } = {}) => {
       `${BASE_URL}/api/dashboard/user-growth?days=${encodeURIComponent(days)}`,
       {
         method: "GET",
+        headers: await getAuthedHeaders(),
         credentials: "include",
         cache: "no-store",
       },

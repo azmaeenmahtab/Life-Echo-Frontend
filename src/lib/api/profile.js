@@ -1,5 +1,6 @@
 import { getUserSessionServer } from "../actions/userSession";
- 
+import { getAuthedHeaders } from "./authed";
+
 const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
 /**
@@ -21,8 +22,10 @@ export const getProfileBySlug = async (slug) => {
     if (session?.user?.id) {
       extraHeaders["x-user-id"] = session.user.id;
     }
+    const headers = await getAuthedHeaders(extraHeaders);
      const response = await fetch(url, {
       method: "GET",
+      headers,
        credentials: "include",
       cache: "no-store",
     });

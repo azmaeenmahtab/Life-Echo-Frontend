@@ -6,6 +6,9 @@
  * `message` attached for easier toasting in the UI.
  */
 
+import { getJWTTokenServer } from "../jwt/jwtServer";
+import { getAuthedHeaders } from "./authed";
+
 
 const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
@@ -18,8 +21,16 @@ const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL;
  * response is not ok.
  */
 export const createLesson = async (payload) => {
+      const token = await getJWTTokenServer();
+    if (!token) {
+      throw new Error("No JWT token available for protected request");
+    }
   const response = await fetch(`${BASE_URL}/api/lessons/create`, {
     method: "POST",
+            headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
     body: JSON.stringify(payload),
     credentials: "include",
   });
@@ -102,6 +113,10 @@ export const getLessonsByUserId = async (userId, query = {}) => {
   if (!userId) return [];
 
   try {
+        const token = await getJWTTokenServer();
+    if (!token) {
+      throw new Error("No JWT token available for protected request");
+    }
     const params = new URLSearchParams();
     if (query.category) params.set("category", query.category);
     if (query.tone) params.set("tone", query.tone);
@@ -114,6 +129,10 @@ export const getLessonsByUserId = async (userId, query = {}) => {
 
     const response = await fetch(url, {
       method: "GET",
+              headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       credentials: "include",
       cache: "no-store",
     });
@@ -291,6 +310,7 @@ export const getLessonById = async (id) => {
   try {
     const response = await fetch(`${BASE_URL}/api/lessons/${id}`, {
       method: "GET",
+      headers: await getAuthedHeaders(),
       credentials: "include",
       cache: "no-store",
     });

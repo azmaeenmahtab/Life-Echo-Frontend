@@ -16,11 +16,15 @@
  */
 
  
+import { getAuthedHeaders } from "../authed";
+
 const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
 const getJson = async (url) => {
+  const headers = await getAuthedHeaders();
    const response = await fetch(url, {
-    method: "GET",
+   method: "GET",
+    headers,
      credentials: "include",
     cache: "no-store",
   });
@@ -161,6 +165,7 @@ export const ignoreLessonReports = async (lessonId) => {
     `${BASE_URL}/api/report/lessons/${encodeURIComponent(lessonId)}`,
     {
       method: "DELETE",
+      headers: await getAuthedHeaders(),
        credentials: "include",
       cache: "no-store",
     },
