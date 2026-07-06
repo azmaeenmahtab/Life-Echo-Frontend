@@ -265,6 +265,10 @@ export const getFavoriteLessonsByUserId = async (userId, filters = {}) => {
   if (!userId) return [];
 
   try {
+        const token = await getJWTTokenServer();
+    if (!token) {
+      throw new Error("No JWT token available for protected request");
+    }
     const params = new URLSearchParams();
     if (filters.category) params.set("category", filters.category);
     if (filters.emotionalTone)
@@ -277,6 +281,10 @@ export const getFavoriteLessonsByUserId = async (userId, filters = {}) => {
 
     const response = await fetch(url, {
       method: "GET",
+              headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       credentials: "include",
       cache: "no-store",
     });
