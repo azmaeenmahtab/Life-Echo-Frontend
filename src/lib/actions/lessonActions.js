@@ -17,6 +17,8 @@
  * `lib/api/lesson.js`.
  */
 
+import { getAuthedHeaders } from "../api/authed";
+
 const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
 /**
@@ -55,7 +57,7 @@ export const toggleLikeLesson = async ({ lessonId, userId }) => {
 
   const response = await fetch(`${BASE_URL}/api/lessons/${lessonId}/like`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: await getAuthedHeaders(),
     credentials: "include",
     body: JSON.stringify({ userId }),
   });
@@ -73,7 +75,7 @@ export const toggleSaveLesson = async ({ lessonId, userId }) => {
 
   const response = await fetch(`${BASE_URL}/api/lessons/${lessonId}/save`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: await getAuthedHeaders(),
     credentials: "include",
     body: JSON.stringify({ userId }),
   });
@@ -93,7 +95,7 @@ export const reportLesson = async ({ lessonId, userId, reason }) => {
 
   const response = await fetch(`${BASE_URL}/api/lessons/${lessonId}/report`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: await getAuthedHeaders(),
     credentials: "include",
     body: JSON.stringify({ userId, reason }),
   });
@@ -114,7 +116,7 @@ export const changeLessonVisibility = async ({
     `${BASE_URL}/api/lessons/${lessonId}/visibility/change`,
     {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: await getAuthedHeaders(),
       credentials: "include",
       body: JSON.stringify({ userId, visibility }),
     },
@@ -138,7 +140,7 @@ export const changeLessonAccessLevel = async ({
     `${BASE_URL}/api/lessons/${lessonId}/access-level/change`,
     {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: await getAuthedHeaders(),
       credentials: "include",
       body: JSON.stringify({ userId, accessLevel }),
     },
@@ -182,7 +184,7 @@ export const setLessonReviewStatus = async ({ lessonId, userId, status }) => {
     `${BASE_URL}/api/lessons/${lessonId}/review-status/change`,
     {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: await getAuthedHeaders(),
       credentials: "include",
       body: JSON.stringify({ userId, status }),
     },
@@ -222,7 +224,7 @@ export const toggleLessonFeatured = async ({ lessonId, userId, isFeatured }) => 
     `${BASE_URL}/api/lessons/${lessonId}/featured/toggle`,
     {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: await getAuthedHeaders(),
       credentials: "include",
       body: JSON.stringify({ userId, isFeatured }),
     },
@@ -253,7 +255,7 @@ export const updateLesson = async ({ lessonId, userId, ...patch }) => {
 
   const response = await fetch(`${BASE_URL}/api/lessons/${lessonId}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: await getAuthedHeaders(),
     credentials: "include",
     body: JSON.stringify({ userId, ...patch }),
   });
@@ -272,7 +274,7 @@ export const deleteLesson = async ({ lessonId, userId }) => {
 
   const response = await fetch(`${BASE_URL}/api/lessons/${lessonId}`, {
     method: "DELETE",
-    headers: { "Content-Type": "application/json" },
+    headers: await getAuthedHeaders(),
     credentials: "include",
     body: JSON.stringify({ userId }),
   });
@@ -288,6 +290,7 @@ export const removeFavoriteLesson = async (userId, lessonId) => {
 
     const response = await fetch(url, {
       method: "DELETE",
+      headers: await getAuthedHeaders(),
       credentials: "include",
     });
 
