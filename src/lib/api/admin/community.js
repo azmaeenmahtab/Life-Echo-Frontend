@@ -48,10 +48,10 @@ export const getTopWeeklyContributors = async ({
       days: String(days),
       limit: String(limit),
     });
-    const token = await getJWTTokenServer();
-    if (!token) {
-      throw new Error("No JWT token available for protected request");
-    }
+    // const token = await getJWTTokenServer();
+    // if (!token) {
+    //   throw new Error("No JWT token available for protected request");
+    // }
  
     const response = await fetch(
       `${BASE_URL}/api/dashboard/top-weekly-contributors?${params.toString()}`,
@@ -59,7 +59,7 @@ export const getTopWeeklyContributors = async ({
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          // Authorization: `Bearer ${token}`,
         },
         credentials: "include",
         cache: "no-store",
@@ -109,10 +109,10 @@ export const getTopWeeklyContributors = async ({
  */
 export const getMostSavedLessons = async ({ limit = 3 } = {}) => {
   try {
-    const token = await getJWTTokenServer();
-    if (!token) {
-      throw new Error("No JWT token available for protected request");
-    }
+    // const token = await getJWTTokenServer();
+    // if (!token) {
+    //   throw new Error("No JWT token available for protected request");
+    // }
  
     const response = await fetch(
       `${BASE_URL}/api/dashboard/most-saved-lessons?limit=${encodeURIComponent(limit)}`,
@@ -120,7 +120,7 @@ export const getMostSavedLessons = async ({ limit = 3 } = {}) => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          // Authorization: `Bearer ${token}`,
         },
         credentials: "include",
         cache: "no-store",
