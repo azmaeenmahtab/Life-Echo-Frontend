@@ -31,7 +31,8 @@ export const config = {
   [
     '/dashboard/add-lesson',
     '/dashboard/my-lessons',
-    '/pricing'
+    '/pricing',
+    '/lessons/details/:path*',
 
   ],
 }
