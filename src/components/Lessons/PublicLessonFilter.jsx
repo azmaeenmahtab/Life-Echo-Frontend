@@ -23,7 +23,7 @@ const TONE_OPTIONS = [
 ];
 
 const SORT_OPTIONS = [
-  { key: "newest", label: "Sort by Newest" },
+  { key: "newest", label: "Newest" },
   { key: "mostsaved", label: "Most Saved" },
 ];
 
@@ -40,11 +40,13 @@ export default function PublicLessonsFilters() {
   const [keywordInput, setKeywordInput] = useState(currentKeywords);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setKeywordInput(currentKeywords);
   }, [currentKeywords]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
+      // eslint-disable-next-line react-hooks/immutability
       updateUrlParam("keywords", keywordInput);
     }, 400);
     return () => clearTimeout(delayDebounceFn);
